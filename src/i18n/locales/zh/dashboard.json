@@ -1,0 +1,54 @@
+{
+  "welcome": "欢迎回来",
+  "welcomeMessage": "这是您的诊所的最新情况",
+  "overview": "仪表板概览",
+  "stats": {
+    "totalPatients": {
+      "title": "总患者数",
+      "description": "活跃患者"
+    },
+    "recommendations": {
+      "title": "推荐",
+      "description": "本月"
+    },
+    "herbsInStock": {
+      "title": "库存草药",
+      "description": "可用项目"
+    },
+    "pendingOrders": {
+      "title": "待处理订单",
+      "description": "等待处理"
+    }
+  },
+  "warning": {
+    "actionRequired": "需要操作",
+    "roleAssignment": "您的账户需要被分配执业者角色才能访问所有功能。请联系管理员。"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "管理您的账户设置和偏好",
+    "profile": {
+      "title": "个人信息",
+      "subtitle": "更新您的个人信息",
+      "fullName": "全名",
+      "email": "电子邮件地址",
+      "phone": "电话号码",
+      "specialization": "专业",
+      "licenseNumber": "许可证号码"
+    },
+    "preferences": {
+      "title": "偏好设置",
+      "subtitle": "自定义您的体验",
+      "language": "语言",
+      "languageDescription": "选择您的首选语言",
+      "currency": "货币",
+      "currencyDescription": "选择您的首选货币"
+    },
+    "payment": {
+      "title": "付款信息",
+      "subtitle": "管理您的佣金支付详情"
+    },
+    "success": "设置保存成功",
+    "error": "保存设置失败"
+  }
+}

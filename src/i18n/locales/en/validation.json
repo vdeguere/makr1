@@ -1,0 +1,11 @@
+{
+  "required": "{{field}} is required",
+  "invalidEmail": "Invalid email address",
+  "invalidPhone": "Invalid phone number format",
+  "minLength": "{{field}} must be at least {{min}} characters",
+  "maxLength": "{{field}} must be less than {{max}} characters",
+  "minValue": "{{field}} must be at least {{min}}",
+  "maxValue": "{{field}} cannot exceed {{max}}",
+  "passwordMismatch": "Passwords do not match",
+  "invalidFormat": "Invalid {{field}} format"
+}

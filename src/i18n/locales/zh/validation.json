@@ -1,0 +1,11 @@
+{
+  "required": "{{field}}是必填项",
+  "invalidEmail": "电子邮件地址无效",
+  "invalidPhone": "电话号码格式无效",
+  "minLength": "{{field}}必须至少{{min}}个字符",
+  "maxLength": "{{field}}必须少于{{max}}个字符",
+  "minValue": "{{field}}必须至少为{{min}}",
+  "maxValue": "{{field}}不能超过{{max}}",
+  "passwordMismatch": "密码不匹配",
+  "invalidFormat": "{{field}}格式无效"
+}

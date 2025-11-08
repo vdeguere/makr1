@@ -1,0 +1,33 @@
+{
+  "title": "AI Support Assistant",
+  "welcomeMessage": "Hello! I'm your AI support assistant. I can help you with:\n\n• Information about Traditional Thai Medicine and herbs\n• Navigating the platform features\n• Questions about orders and recommendations\n• Connecting with practitioners\n\nHow can I assist you today?",
+  "placeholder": "Type your message...",
+  "send": "Send",
+  "clear": "Clear chat",
+  "error": "Sorry, I encountered an error. Please try again.",
+  "rateLimitError": "Too many requests. Please wait a moment and try again.",
+  "paymentError": "AI service temporarily unavailable. Please try again later.",
+  "typing": "AI is typing...",
+  "close": "Close chat",
+  "open": "Open chat support",
+  "escalate": "Talk to Human Support",
+  "escalateDescription": "Get help from our support team. Responses typically within 24 hours.",
+  "escalateSuccess": "Support ticket submitted successfully!",
+  "escalateTicketId": "Your ticket #{{ticketId}} has been created",
+  "escalateResponseTime": "We typically respond within 24 hours",
+  "escalateEmailRequired": "Required for follow-up communication",
+  "escalateSubject": "Subject",
+  "escalateMessage": "Describe your issue in detail",
+  "escalateIncludeHistory": "Include my conversation history with AI",
+  "escalateName": "Your name (optional)",
+  "escalateSubmit": "Submit Support Request",
+  "escalateWarning": "⏱️ Support typically responds within 24 hours via email",
+  "productCard": {
+    "viewDetails": "View Details",
+    "subscribeAndSave": "Subscribe & Save",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "loadingProduct": "Loading product...",
+    "productNotFound": "Product not available"
+  }
+}

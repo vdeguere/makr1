@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 220 20% 98%;
+    --foreground: 220 10% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 20%;
+
+    --primary: 28 90% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 220 10% 20%;
+
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 8% 50%;
+
+    --accent: 28 85% 95%;
+    --accent-foreground: 28 90% 45%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 28 90% 55%;
+
+    --radius: 0.5rem;
+
+    --hero-badge-bg: 28 85% 95%;
+    --hero-badge-text: 28 90% 40%;
+    
+    --stat-value: 220 10% 20%;
+    --stat-label: 220 8% 50%;
+
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 220 10% 20%;
+    --sidebar-primary: 28 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 96%;
+    --sidebar-accent-foreground: 220 10% 20%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 28 90% 55%;
+  }
+
+  .dark {
+    --background: 150 8% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 150 8% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 150 8% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 28 85% 60%;
+    --primary-foreground: 150 8% 8%;
+
+    --secondary: 150 8% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 150 8% 15%;
+    --muted-foreground: 150 5% 65%;
+
+    --accent: 150 8% 20%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 150 8% 20%;
+    --input: 150 8% 20%;
+    --ring: 28 85% 60%;
+
+    --hero-badge-bg: 28 30% 20%;
+    --hero-badge-text: 28 85% 70%;
+    
+    --stat-value: 0 0% 98%;
+    --stat-label: 150 5% 65%;
+
+    --sidebar: 150 8% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 28 85% 60%;
+    --sidebar-primary-foreground: 150 8% 8%;
+    --sidebar-accent: 150 8% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 150 8% 20%;
+    --sidebar-ring: 28 85% 60%;
+  }
+}
+
+@layer base {
+  /* Safe area support for notched devices */
+  :root {
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+    
+    /* Dynamic viewport units */
+    --vh: 1vh;
+    --vw: 1vw;
+    
+    /* Fluid spacing scale */
+    --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+    --space-sm: clamp(0.5rem, 1vw, 1rem);
+    --space-md: clamp(1rem, 2vw, 1.5rem);
+    --space-lg: clamp(1.5rem, 3vw, 2.5rem);
+    --space-xl: clamp(2rem, 4vw, 3.5rem);
+    
+    /* Fluid font sizes */
+    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+    --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+    --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+    
+    /* Minimum touch target */
+    --touch-target: clamp(44px, 10vw, 56px);
+  }
+
+  * {
+    @apply border-border;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Native tap highlights */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Safe area utilities */
+  .pt-safe {
+    padding-top: calc(1rem + var(--sat));
+  }
+
+  .pb-safe {
+    padding-bottom: calc(0.5rem + var(--sab));
+  }
+
+  .pl-safe {
+    padding-left: calc(1rem + var(--sal));
+  }
+
+  .pr-safe {
+    padding-right: calc(1rem + var(--sar));
+  }
+}

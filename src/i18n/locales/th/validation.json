@@ -1,0 +1,11 @@
+{
+  "required": "{{field}} จำเป็นต้องระบุ",
+  "invalidEmail": "ที่อยู่อีเมลไม่ถูกต้อง",
+  "invalidPhone": "รูปแบบหมายเลขโทรศัพท์ไม่ถูกต้อง",
+  "minLength": "{{field}} ต้องมีอย่างน้อย {{min}} ตัวอักษร",
+  "maxLength": "{{field}} ต้องน้อยกว่า {{max}} ตัวอักษร",
+  "minValue": "{{field}} ต้องมีอย่างน้อย {{min}}",
+  "maxValue": "{{field}} ไม่สามารถเกิน {{max}}",
+  "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+  "invalidFormat": "รูปแบบ {{field}} ไม่ถูกต้อง"
+}

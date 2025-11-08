@@ -1,0 +1,54 @@
+{
+  "welcome": "Welcome back",
+  "welcomeMessage": "Here's what's happening with your practice.",
+  "overview": "Dashboard Overview",
+  "stats": {
+    "totalPatients": {
+      "title": "Total Patients",
+      "description": "Active patients"
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "description": "This month"
+    },
+    "herbsInStock": {
+      "title": "Herbs in Stock",
+      "description": "Available items"
+    },
+    "pendingOrders": {
+      "title": "Pending Orders",
+      "description": "Awaiting fulfillment"
+    }
+  },
+  "warning": {
+    "actionRequired": "Action Required",
+    "roleAssignment": "Your account needs to be assigned the practitioner role to access all features. Please contact an administrator."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "profile": {
+      "title": "Profile Information",
+      "subtitle": "Update your personal information",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "specialization": "Specialization",
+      "licenseNumber": "License Number"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "subtitle": "Customize your experience",
+      "language": "Language",
+      "languageDescription": "Select your preferred language",
+      "currency": "Currency",
+      "currencyDescription": "Select your preferred currency"
+    },
+    "payment": {
+      "title": "Payment Information",
+      "subtitle": "Manage your payment details for commission payouts"
+    },
+    "success": "Settings saved successfully",
+    "error": "Failed to save settings"
+  }
+}

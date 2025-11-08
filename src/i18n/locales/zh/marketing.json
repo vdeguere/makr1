@@ -1,0 +1,72 @@
+{
+  "hero": {
+    "badge": "泰国传统医学的Fullscript",
+    "title": "充满信心地推荐泰国传统医学",
+    "titleHighlight": "信心",
+    "subtitle": "首个从业者平台，用于推荐百年泰国传统医学配方。配备教育、安全检查和欧洲范围内的直接患者配送。",
+    "cta": {
+      "primary": "开始推荐",
+      "secondary": "观看演示"
+    }
+  },
+  "stats": {
+    "title": "受到全球从业者的信赖",
+    "subtitle": "加入不断壮大的接受泰国传统医学的医疗专业人士社区",
+    "formulas": {
+      "value": "100+",
+      "label": "传统配方",
+      "description": "经过仔细研究和验证"
+    },
+    "practitioners": {
+      "value": "500+",
+      "label": "认证从业者",
+      "description": "在整个欧洲使用我们的平台"
+    },
+    "shipping": {
+      "value": "EU",
+      "label": "全欧运输",
+      "description": "直接配送给患者"
+    },
+    "tradition": {
+      "value": "100",
+      "label": "年传统",
+      "description": "古老智慧，现代配送"
+    }
+  },
+  "features": {
+    "title": "推荐泰国传统医学所需的一切",
+    "subtitle": "从创建推荐到患者教育，我们的平台处理泰国传统医学实践管理的各个方面。",
+    "items": {
+      "dashboard": {
+        "category": "核心平台",
+        "title": "从业者仪表板",
+        "description": "在一个专业平台中完成推荐管理、患者跟踪和利润可见性。"
+      },
+      "oneClick": {
+        "category": "推荐",
+        "title": "一键推荐",
+        "description": "为您的患者构建自定义推荐并生成安全的结账链接。"
+      },
+      "education": {
+        "category": "教育",
+        "title": "泰医教育门户",
+        "description": "完整的泰国传统医学认证课程，具有进度跟踪和继续教育。"
+      },
+      "safety": {
+        "category": "安全",
+        "title": "草药相互作用检查器",
+        "description": "内置安全验证系统可防止危险的草药组合并确保患者安全。"
+      },
+      "autoReorder": {
+        "category": "患者护理",
+        "title": "患者自动重新订购",
+        "description": "患者可以为持续治疗设置自动重新订购，确保治疗依从性。"
+      },
+      "fulfillment": {
+        "category": "物流",
+        "title": "欧盟范围内配送",
+        "description": "直接运送给欧洲各地的患者，配有全程跟踪和质量保证。"
+      }
+    }
+  }
+}

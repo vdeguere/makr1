@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Charm Sense - Traditional Thai Medicine for Practitioners</title>
+    <meta name="description" content="The first practitioner platform for recommending 100-year-old Traditional Thai Medicine formulas. Complete with education, safety checking, and direct patient fulfillment across Europe." />
+    <meta name="author" content="Charm Sense" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#e67e22" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Charm Sense" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <meta property="og:title" content="Charm Sense - Traditional Thai Medicine for Practitioners" />
+    <meta property="og:description" content="The first practitioner platform for recommending 100-year-old Traditional Thai Medicine formulas with education, safety checking, and EU-wide fulfillment." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@charmsense" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Google Analytics 4 -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Set default consent to denied (GDPR compliance)
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied'
+      });
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      gtag('js', new Date());
+      // Note: GA4 will be initialized after user consent
+      // Measurement ID will be configured via environment variable
+      const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
+      if (measurementId) {
+        gtag('config', measurementId, {
+          'send_page_view': false // We'll handle page views manually
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

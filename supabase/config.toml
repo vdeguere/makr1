@@ -1,0 +1,58 @@
+project_id = "xizvezmghzgxgeliuiym"
+
+[functions.generate-certificate]
+verify_jwt = false
+
+[functions.generate-checkout-link]
+verify_jwt = false
+
+[functions.generate-promptpay-checkout]
+verify_jwt = false
+
+[functions.generate-promptpay-qr]
+verify_jwt = false
+
+[functions.send-recommendation-email]
+verify_jwt = false
+
+[functions.send-recommendation-line]
+verify_jwt = false
+
+[functions.send-recommendation]
+verify_jwt = true
+
+[functions.create-order-from-checkout]
+verify_jwt = false
+
+[functions.send-order-status-update]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.generate-patient-connection-link]
+verify_jwt = true
+
+[functions.verify-patient-connection-token]
+verify_jwt = false
+
+[functions.connect-patient-account]
+verify_jwt = false
+
+[functions.connect-line-account]
+verify_jwt = false
+
+[functions.line-oauth-callback]
+verify_jwt = false
+
+[functions.create-stripe-checkout-session]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.chat-support]
+verify_jwt = false
+
+[functions.escalate-chat-support]
+verify_jwt = false

@@ -1,0 +1,72 @@
+{
+  "hero": {
+    "badge": "The Fullscript of Traditional Thai Medicine",
+    "title": "Recommend Traditional Thai Medicine with",
+    "titleHighlight": "Confidence",
+    "subtitle": "The first practitioner platform for recommending 100-year-old Traditional Thai Medicine formulas. Complete with education, safety checking, and direct patient fulfillment across Europe.",
+    "cta": {
+      "primary": "Start Recommending",
+      "secondary": "Watch Demo"
+    }
+  },
+  "stats": {
+    "title": "Trusted by Practitioners Worldwide",
+    "subtitle": "Join the growing community of healthcare professionals embracing Traditional Thai Medicine",
+    "formulas": {
+      "value": "100+",
+      "label": "Traditional Formulas",
+      "description": "Carefully researched and validated"
+    },
+    "practitioners": {
+      "value": "500+",
+      "label": "Certified Practitioners",
+      "description": "Across Europe using our platform"
+    },
+    "shipping": {
+      "value": "EU",
+      "label": "Wide Shipping",
+      "description": "Direct fulfillment to patients"
+    },
+    "tradition": {
+      "value": "100",
+      "label": "Years of Tradition",
+      "description": "Ancient wisdom, modern delivery"
+    }
+  },
+  "features": {
+    "title": "Everything You Need to Recommend Traditional Thai Medicine",
+    "subtitle": "From recommendation creation to patient education, our platform handles every aspect of Traditional Thai Medicine practice management.",
+    "items": {
+      "dashboard": {
+        "category": "Core Platform",
+        "title": "Practitioner Dashboard",
+        "description": "Complete recommendation management, patient tracking, and margin visibility in one professional platform."
+      },
+      "oneClick": {
+        "category": "Recommendation",
+        "title": "One-Click Recommending",
+        "description": "Build custom recommendations and generate secure checkout links for your patients."
+      },
+      "education": {
+        "category": "Education",
+        "title": "TTM Education Portal",
+        "description": "Complete Traditional Thai Medicine certification courses with progress tracking and continuing education."
+      },
+      "safety": {
+        "category": "Safety",
+        "title": "Herb Interaction Checker",
+        "description": "Built-in safety validation system prevents dangerous herb combinations and ensures patient safety."
+      },
+      "autoReorder": {
+        "category": "Patient Care",
+        "title": "Patient Auto-Reorder",
+        "description": "Patients can set up automatic reorders for ongoing treatments, ensuring treatment compliance."
+      },
+      "fulfillment": {
+        "category": "Logistics",
+        "title": "EU-Wide Fulfillment",
+        "description": "Direct shipping to patients across Europe with full tracking and quality assurance."
+      }
+    }
+  }
+}

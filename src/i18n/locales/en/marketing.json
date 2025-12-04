@@ -1,71 +1,71 @@
 {
   "hero": {
-    "badge": "The Fullscript of Traditional Thai Medicine",
-    "title": "Recommend Traditional Thai Medicine with",
-    "titleHighlight": "Confidence",
-    "subtitle": "The first practitioner platform for recommending 100-year-old Traditional Thai Medicine formulas. Complete with education, safety checking, and direct patient fulfillment across Europe.",
+    "badge": "Vocational Training Platform",
+    "title": "Build Your Academy with",
+    "titleHighlight": "Makr Academy",
+    "subtitle": "The complete platform for vocational training academies. Manage students, verify skills with visual evidence, gate professional tools, and turn graduates into business owners.",
     "cta": {
-      "primary": "Start Recommending",
+      "primary": "Start Teaching",
       "secondary": "Watch Demo"
     }
   },
   "stats": {
-    "title": "Trusted by Practitioners Worldwide",
-    "subtitle": "Join the growing community of healthcare professionals embracing Traditional Thai Medicine",
+    "title": "Trusted by Academies Worldwide",
+    "subtitle": "Join the growing community of vocational training academies using Makr Academy",
     "formulas": {
       "value": "100+",
-      "label": "Traditional Formulas",
-      "description": "Carefully researched and validated"
+      "label": "Courses Available",
+      "description": "Comprehensive training programs"
     },
-    "practitioners": {
+    "instructors": {
       "value": "500+",
-      "label": "Certified Practitioners",
-      "description": "Across Europe using our platform"
+      "label": "Certified Instructors",
+      "description": "Teaching on our platform"
     },
     "shipping": {
-      "value": "EU",
-      "label": "Wide Shipping",
-      "description": "Direct fulfillment to patients"
+      "value": "Global",
+      "label": "Kit Fulfillment",
+      "description": "Direct shipping to students"
     },
     "tradition": {
-      "value": "100",
-      "label": "Years of Tradition",
-      "description": "Ancient wisdom, modern delivery"
+      "value": "100%",
+      "label": "Skill Verified",
+      "description": "Visual evidence required for certification"
     }
   },
   "features": {
-    "title": "Everything You Need to Recommend Traditional Thai Medicine",
-    "subtitle": "From recommendation creation to patient education, our platform handles every aspect of Traditional Thai Medicine practice management.",
+    "title": "Everything You Need to Run Your Vocational Academy",
+    "subtitle": "From course creation to skill verification, our platform handles every aspect of vocational training academy management.",
     "items": {
       "dashboard": {
         "category": "Core Platform",
-        "title": "Practitioner Dashboard",
-        "description": "Complete recommendation management, patient tracking, and margin visibility in one professional platform."
+        "title": "Instructor Dashboard",
+        "description": "Complete student management, assignment tracking, and progress visibility in one professional platform."
       },
       "oneClick": {
-        "category": "Recommendation",
-        "title": "One-Click Recommending",
-        "description": "Build custom recommendations and generate secure checkout links for your patients."
+        "category": "Skill Verification",
+        "title": "Visual Work Submission",
+        "description": "Students submit photos/videos of their work. Instructors grade with annotations and feedback."
       },
       "education": {
         "category": "Education",
-        "title": "TTM Education Portal",
-        "description": "Complete Traditional Thai Medicine certification courses with progress tracking and continuing education."
+        "title": "Course Management",
+        "description": "Create comprehensive courses with video lessons, assignments, and certification tracking."
       },
       "safety": {
         "category": "Safety",
-        "title": "Herb Interaction Checker",
-        "description": "Built-in safety validation system prevents dangerous herb combinations and ensures patient safety."
+        "title": "Gated Inventory",
+        "description": "Prevent students from buying professional tools until they prove competence with certification requirements."
       },
       "autoReorder": {
-        "category": "Patient Care",
-        "title": "Patient Auto-Reorder",
-        "description": "Patients can set up automatic reorders for ongoing treatments, ensuring treatment compliance."
+        "category": "Student Success",
+        "title": "At-Risk Detection",
+        "description": "Automatically identify struggling students and send personalized nudges to keep them on track."
       },
       "fulfillment": {
         "category": "Logistics",
-        "title": "EU-Wide Fulfillment",
-        "description": "Direct shipping to patients across Europe with full tracking and quality assurance."
+        "title": "Kit-Bundled Enrollment",
+        "description": "Automatically create orders for starter kits when students enroll in courses."
       }
     }
   }

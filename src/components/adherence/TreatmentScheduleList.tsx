@@ -50,7 +50,7 @@ export function TreatmentScheduleList({ patientId }: TreatmentScheduleListProps)
       <CardHeader>
         <CardTitle>Treatment Schedules</CardTitle>
         <CardDescription>
-          All your medication schedules
+          All your treatment schedules
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

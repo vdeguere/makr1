@@ -130,7 +130,7 @@ export function DailyCheckInCard({ patientId }: DailyCheckInCardProps) {
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription>Mark your medications as taken today</CardDescription>
+            <CardDescription>Mark your routine as complete today</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -173,7 +173,7 @@ export function DailyCheckInCard({ patientId }: DailyCheckInCardProps) {
                       disabled={checkInMutation.isPending}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      Mark Taken
+                      Mark Complete
                     </Button>
                   )}
                 </div>

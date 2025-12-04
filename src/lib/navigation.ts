@@ -21,7 +21,8 @@ import {
   Calendar,
   Heart,
   ShoppingBag,
-  LineChart
+  LineChart,
+  Mail
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -50,16 +51,21 @@ export const adminItems: NavigationItem[] = [
     icon: Video,
     children: [
       { titleKey: 'nav.manageMeetings', url: '/dashboard/admin/live-meetings', icon: Settings },
+      { titleKey: 'nav.manageSessions', url: '/dashboard/admin/live-meetings', icon: Settings },
       { titleKey: 'nav.upcomingMeetings', url: '/dashboard/live-meetings', icon: Calendar },
+      { titleKey: 'nav.upcomingSessions', url: '/dashboard/live-meetings', icon: Calendar },
     ]
   },
-  { titleKey: 'nav.herbs', url: '/dashboard/herbs', icon: Leaf },
+  { titleKey: 'nav.products', url: '/dashboard/herbs', icon: Leaf },
+  { titleKey: 'nav.inventory', url: '/dashboard/herbs', icon: Leaf },
   { titleKey: 'nav.orders', url: '/dashboard/orders', icon: Package },
   { titleKey: 'nav.userManagement', url: '/dashboard/admin/users', icon: Shield },
   { titleKey: 'nav.patientManagement', url: '/dashboard/admin/patients', icon: UserCog },
   { titleKey: 'nav.courseManagement', url: '/dashboard/admin/courses', icon: GraduationCap },
   { titleKey: 'nav.certificateManagement', url: '/dashboard/admin/certificates', icon: Shield },
+  { titleKey: 'nav.progressMetrics', url: '/dashboard/admin/progress-metrics', icon: LineChart },
   { titleKey: 'nav.supportMessages', url: '/dashboard/admin/support-messages', icon: MessageCircle },
+  { titleKey: 'nav.contactSubmissions', url: '/dashboard/admin/contact-submissions', icon: Mail },
 ];
 
 export const practitionerItems: NavigationItem[] = [
@@ -78,19 +84,24 @@ export const practitionerItems: NavigationItem[] = [
     icon: Video,
     children: [
       { titleKey: 'nav.myMeetings', url: '/dashboard/practitioner/live-meetings', icon: Video },
+      { titleKey: 'nav.mySessions', url: '/dashboard/practitioner/live-meetings', icon: Video },
       { titleKey: 'nav.upcomingMeetings', url: '/dashboard/live-meetings', icon: Calendar },
+      { titleKey: 'nav.upcomingSessions', url: '/dashboard/live-meetings', icon: Calendar },
     ]
   },
   { titleKey: 'nav.myPatients', url: '/dashboard/patients', icon: Users },
+  { titleKey: 'nav.myStudents', url: '/dashboard/patients', icon: Users },
+  { titleKey: 'nav.submissions', url: '/dashboard/practitioner/submissions', icon: FileText },
   { titleKey: 'nav.messages', url: '/dashboard/practitioner/messages', icon: MessageCircle },
   { titleKey: 'nav.recommendations', url: '/dashboard/recommendations', icon: FileText },
+  { titleKey: 'nav.assignments', url: '/dashboard/recommendations', icon: FileText },
   { titleKey: 'nav.productCatalog', url: '/dashboard/herbs', icon: Leaf },
   { titleKey: 'nav.orders', url: '/dashboard/orders', icon: ShoppingCart },
   { titleKey: 'nav.salesCommission', url: '/dashboard/practitioner/analytics', icon: TrendingUp },
 ];
 
 export const patientItems: NavigationItem[] = [
-  { titleKey: 'nav.healthOverview', url: '/dashboard/patient/records', icon: LayoutDashboard },
+  { titleKey: 'nav.healthOverview', url: '/dashboard/student/records', icon: LayoutDashboard },
   {
     titleKey: 'nav.training',
     icon: GraduationCap,
@@ -129,9 +140,9 @@ export function getNavigationLabel(role: string): string {
     case 'dev':
       return 'nav.adminDashboard';
     case 'practitioner':
-      return 'nav.practitionerDashboard';
+      return 'nav.instructorDashboard';
     case 'patient':
-      return 'nav.patientPortal';
+      return 'nav.studentPortal';
     default:
       return 'nav.dashboard';
   }

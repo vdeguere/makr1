@@ -1,6 +1,6 @@
 {
   "title": "AI Support Assistant",
-  "welcomeMessage": "Hello! I'm your AI support assistant. I can help you with:\n\n• Information about Traditional Thai Medicine and herbs\n• Navigating the platform features\n• Questions about orders and recommendations\n• Connecting with practitioners\n\nHow can I assist you today?",
+  "welcomeMessage": "Hello! I'm your AI support assistant. I can help you with:\n\n• Information about courses and training\n• Navigating the platform features\n• Questions about assignments and submissions\n• Connecting with instructors\n• Product and kit information\n\nHow can I assist you today?",
   "placeholder": "Type your message...",
   "send": "Send",
   "clear": "Clear chat",

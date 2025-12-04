@@ -48,7 +48,7 @@ const getNavItemsByRole = (role: string): NavItem[] => {
       ];
     case 'patient':
       return [
-        { icon: Heart, labelKey: 'nav.health', path: '/dashboard/patient/records' },
+        { icon: Heart, labelKey: 'nav.health', path: '/dashboard/student/records' },
         { icon: MessageCircle, labelKey: 'nav.messages', path: '/dashboard/patient/messages' },
         { icon: Leaf, labelKey: 'nav.products', path: '/dashboard/herbs' },
         { icon: ShoppingCart, labelKey: 'nav.orders', path: '/dashboard/patient/orders' },

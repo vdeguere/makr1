@@ -12,6 +12,7 @@ import {
   updatePageAnalyticsDuration,
   checkIfBounce 
 } from '@/lib/pageAnalytics';
+import { logger } from '@/lib/logger';
 
 /**
  * Pure analytics hook - no direct Supabase auth queries.
@@ -39,7 +40,7 @@ export const useAnalytics = () => {
         userIdRef.current,
         userRoleRef.current
       ).catch(err => {
-        console.warn('Page view tracking failed:', err);
+        logger.warn('Page view tracking failed:', err);
       });
     }, 100);
 
@@ -47,7 +48,7 @@ export const useAnalytics = () => {
     return () => {
       clearTimeout(trackTimer);
       updatePageAnalyticsDuration(false).catch(err => {
-        console.warn('Duration update failed:', err);
+        logger.warn('Duration update failed:', err);
       });
     };
   }, [location]);
@@ -57,7 +58,7 @@ export const useAnalytics = () => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         updatePageAnalyticsDuration(false).catch(err => {
-          console.warn('Duration update failed:', err);
+          logger.warn('Duration update failed:', err);
         });
       }
     };
@@ -67,7 +68,7 @@ export const useAnalytics = () => {
       checkIfBounce(sessionId).then(isBounce => {
         updatePageAnalyticsDuration(isBounce);
       }).catch(err => {
-        console.warn('Bounce check failed:', err);
+        logger.warn('Bounce check failed:', err);
       });
     };
 
@@ -97,7 +98,7 @@ export const useAnalytics = () => {
   // Track custom event
   const trackEvent = useCallback((eventName: string, params?: Record<string, any>) => {
     if (!isGALoaded()) {
-      console.warn('GA4 not loaded, event not tracked:', eventName);
+      logger.warn('GA4 not loaded, event not tracked:', eventName);
       return;
     }
 

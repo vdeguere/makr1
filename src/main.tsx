@@ -8,6 +8,7 @@ import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { toast } from 'sonner';
 import { isIOS, isAndroid } from './lib/platformDetection';
+import { logger } from './lib/logger';
 
 // Track if app is opened in standalone mode (installed as PWA)
 if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -50,7 +51,7 @@ if (import.meta.env.PROD) {
       });
     },
     onOfflineReady() {
-      console.log('App is ready to work offline');
+      logger.log('App is ready to work offline');
     },
   });
 } else {

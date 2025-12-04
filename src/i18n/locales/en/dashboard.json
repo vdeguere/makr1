@@ -3,26 +3,38 @@
   "welcomeMessage": "Here's what's happening with your practice.",
   "overview": "Dashboard Overview",
   "stats": {
-    "totalPatients": {
-      "title": "Total Patients",
-      "description": "Active patients"
+    "totalStudents": {
+      "title": "Active Students",
+      "description": "Currently enrolled students"
     },
-    "recommendations": {
-      "title": "Recommendations",
+    "assignments": {
+      "title": "Assignments",
       "description": "This month"
     },
     "herbsInStock": {
-      "title": "Herbs in Stock",
+      "title": "Products in Stock",
       "description": "Available items"
     },
     "pendingOrders": {
       "title": "Pending Orders",
       "description": "Awaiting fulfillment"
+    },
+    "kitsToShip": {
+      "title": "Kits To Ship",
+      "description": "Course starter kits pending shipment"
+    },
+    "pendingCertifications": {
+      "title": "Pending Certifications",
+      "description": "Ready to issue certificates"
+    },
+    "pendingGradings": {
+      "title": "Pending Gradings",
+      "description": "Work submissions awaiting review"
     }
   },
   "warning": {
     "actionRequired": "Action Required",
-    "roleAssignment": "Your account needs to be assigned the practitioner role to access all features. Please contact an administrator."
+    "roleAssignment": "Your account needs to be assigned the instructor role to access all features. Please contact an administrator."
   },
   "settings": {
     "title": "Settings",

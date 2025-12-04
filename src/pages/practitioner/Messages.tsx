@@ -10,6 +10,7 @@ import { PractitionerNewMessageDialog } from '@/components/practitioner/messages
 import { MessageThread } from '@/components/patients/messages/MessageThread';
 import { ConversationList } from '@/components/messages/ConversationList';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Message {
   id: string;
@@ -146,7 +147,7 @@ export default function PractitionerMessages() {
             thread.recipientName = patient.full_name;
           }
         } catch (error) {
-          console.error('Error fetching patient name:', error);
+          logger.error('Error fetching patient name:', error);
         }
       }
 
@@ -168,7 +169,7 @@ export default function PractitionerMessages() {
         }
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      logger.error('Error fetching messages:', error);
       toast.error('Failed to load messages');
     } finally {
       setLoading(false);
@@ -192,7 +193,7 @@ export default function PractitionerMessages() {
 
         await fetchMessages();
       } catch (error) {
-        console.error('Error marking messages as read:', error);
+        logger.error('Error marking messages as read:', error);
       }
     }
   };

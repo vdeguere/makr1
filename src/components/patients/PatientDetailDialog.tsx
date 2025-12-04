@@ -18,6 +18,7 @@ import { VitalSignsTab } from './medical/VitalSignsTab';
 import { DocumentsTab } from './medical/DocumentsTab';
 import { RecommendationsTab } from './medical/RecommendationsTab';
 import { OrdersTab } from './medical/OrdersTab';
+import { logger } from '@/lib/logger';
 import { TTMPatientProfileTab } from './ttm/TTMPatientProfileTab';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import { supabase } from '@/integrations/supabase/client';
@@ -89,13 +90,13 @@ export function PatientDetailDialog({ patient, open, onOpenChange, onUpdate, isA
 
       if (error) throw error;
 
-      toast.success('Patient deleted successfully');
+      toast.success('Student deleted successfully');
       onUpdate();
       onOpenChange(false);
       setIsDeleteOpen(false);
     } catch (error) {
-      console.error('Error deleting patient:', error);
-      toast.error('Failed to delete patient');
+      logger.error('Error deleting patient:', error);
+      toast.error('Failed to delete student');
     } finally {
       setIsDeleting(false);
     }
@@ -121,7 +122,7 @@ export function PatientDetailDialog({ patient, open, onOpenChange, onUpdate, isA
                 </div>
                 <DialogDescription>
                   {age && `${age} years old • `}
-                  Patient since {format(new Date(patient.created_at), 'MMMM yyyy')}
+                  Student since {format(new Date(patient.created_at), 'MMMM yyyy')}
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -173,7 +174,7 @@ export function PatientDetailDialog({ patient, open, onOpenChange, onUpdate, isA
               </TabsTrigger>
               <TabsTrigger value="ttm-profile">
                 <ClipboardList className="h-4 w-4 mr-2" />
-                TTM Profile
+                Skin Profile
               </TabsTrigger>
               {isAdminMode && (
                 <TabsTrigger value="audit">
@@ -349,7 +350,7 @@ export function PatientDetailDialog({ patient, open, onOpenChange, onUpdate, isA
               onClick={() => setIsDeleteOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete Patient
+              Delete Student
             </Button>
           </div>
         </DialogContent>
@@ -380,10 +381,10 @@ export function PatientDetailDialog({ patient, open, onOpenChange, onUpdate, isA
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Patient</AlertDialogTitle>
+            <AlertDialogTitle>Delete Student</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete {patient.full_name}? This action cannot be undone.
-              All recommendations and orders associated with this patient will also be affected.
+              All assignments and orders associated with this student will also be affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

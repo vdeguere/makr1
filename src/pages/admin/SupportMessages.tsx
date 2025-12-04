@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface SupportMessage {
   id: string;
@@ -130,7 +131,7 @@ export default function SupportMessages() {
         setSelectedThread(sortedThreads[0]);
       }
     } catch (error) {
-      console.error('Error fetching support messages:', error);
+      logger.error('Error fetching support messages:', error);
       toast.error('Failed to load support messages');
     } finally {
       setLoading(false);
@@ -153,7 +154,7 @@ export default function SupportMessages() {
 
         await fetchSupportMessages();
       } catch (error) {
-        console.error('Error marking messages as read:', error);
+        logger.error('Error marking messages as read:', error);
       }
     }
   };
@@ -180,7 +181,7 @@ export default function SupportMessages() {
       setReplyText('');
       await fetchSupportMessages();
     } catch (error) {
-      console.error('Error sending reply:', error);
+      logger.error('Error sending reply:', error);
       toast.error('Failed to send reply');
     } finally {
       setSending(false);

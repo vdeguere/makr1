@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/currency';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { logger } from '@/lib/logger';
 
 interface ProductCardProps {
   productId: string;
@@ -45,7 +46,7 @@ export const ProductCard = ({ productId }: ProductCardProps) => {
         if (error) throw error;
         setProduct(data);
       } catch (err) {
-        console.error('Error fetching product:', err);
+        logger.error('Error fetching product:', err);
         setError(true);
       } finally {
         setLoading(false);

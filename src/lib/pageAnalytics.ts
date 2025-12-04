@@ -6,6 +6,7 @@ import {
   getPreviousPage,
   setPreviousPage
 } from './analytics';
+import { logger } from './logger';
 
 // Store the current page analytics ID for updating later
 let currentPageAnalyticsId: string | null = null;
@@ -45,7 +46,7 @@ export const trackPageViewToSupabase = async (
 
     if (error) {
       // Silently fail analytics - don't block the app
-      console.warn('Analytics tracking failed (non-critical):', error.message);
+      logger.warn('Analytics tracking failed (non-critical):', error.message);
       return null;
     }
 
@@ -59,7 +60,7 @@ export const trackPageViewToSupabase = async (
     return data.id;
   } catch (error) {
     // Silently fail analytics - don't block the app
-    console.warn('Analytics tracking error (non-critical):', error);
+    logger.warn('Analytics tracking error (non-critical):', error);
     return null;
   }
 };
@@ -81,14 +82,14 @@ export const updatePageAnalyticsDuration = async (isBounce: boolean = false) => 
 
     if (error) {
       // Silently fail analytics - don't block the app
-      console.warn('Analytics update failed (non-critical):', error.message);
+      logger.warn('Analytics update failed (non-critical):', error.message);
     }
 
     // Reset for next page
     currentPageAnalyticsId = null;
   } catch (error) {
     // Silently fail analytics - don't block the app
-    console.warn('Analytics update error (non-critical):', error);
+    logger.warn('Analytics update error (non-critical):', error);
   }
 };
 
@@ -102,14 +103,14 @@ export const checkIfBounce = async (sessionId: string): Promise<boolean> => {
 
     if (error) {
       // Silently fail analytics - don't block the app
-      console.warn('Bounce check failed (non-critical):', error.message);
+      logger.warn('Bounce check failed (non-critical):', error.message);
       return false;
     }
 
     return count === 1;
   } catch (error) {
     // Silently fail analytics - don't block the app
-    console.warn('Bounce check error (non-critical):', error);
+    logger.warn('Bounce check error (non-critical):', error);
     return false;
   }
 };

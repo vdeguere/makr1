@@ -6,6 +6,7 @@ import { Button } from './button';
 import { Slider } from './slider';
 import { Label } from './label';
 import { Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ImageCropDialogProps {
   open: boolean;
@@ -112,7 +113,7 @@ export function ImageCropDialog({
       onCropComplete(croppedBlob);
       onOpenChange(false);
     } catch (error) {
-      console.error('Error cropping image:', error);
+      logger.error('Error cropping image:', error);
     } finally {
       setProcessing(false);
     }

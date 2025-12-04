@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Package, AlertCircle, Leaf, Filter, Settings, SlidersHorizontal } from 'lucide-react';
+import { Search, Package, AlertCircle, Leaf, Filter, Settings, SlidersHorizontal, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HerbDetailDialog } from '@/components/herbs/HerbDetailDialog';
 import { HerbFormDialog } from '@/components/herbs/HerbFormDialog';
@@ -23,6 +23,7 @@ import { Info } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getHerbPrice } from '@/lib/currency';
 import { calculateSubscriptionPrice } from '@/lib/subscriptionUtils';
+import { logger } from '@/lib/logger';
 
 interface Category {
   id: string;
@@ -61,6 +62,8 @@ interface Herb {
   subscription_enabled?: boolean | null;
   subscription_discount_percentage?: number | null;
   subscription_intervals?: string[] | null;
+  required_course_id?: string | null;
+  required_certification_id?: string | null;
 }
 
 export default function Herbs() {
@@ -84,6 +87,8 @@ export default function Herbs() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showInStockOnly, setShowInStockOnly] = useState(false);
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
+  const [certifications, setCertifications] = useState<Set<string>>(new Set());
 
   // ProtectedRoute handles auth redirect - no need for page-level check
 
@@ -91,11 +96,66 @@ export default function Herbs() {
     if (user) {
       fetchHerbs();
       fetchCategories();
+      if (activeRole === 'patient') {
+        fetchStudentProgress();
+      }
     }
-  }, [user]);
+  }, [user, activeRole]);
+
+  const fetchStudentProgress = async () => {
+    if (!user) return;
+
+    try {
+      // Get student ID
+      const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!patient) return;
+
+      // Fetch completed courses
+      const { data: enrollments } = await supabase
+        .from('course_enrollments')
+        .select('course_id')
+        .eq('user_id', user.id)
+        .eq('completion_percentage', 100);
+
+      if (enrollments) {
+        setCompletedCourses(new Set(enrollments.map(e => e.course_id)));
+      }
+
+      // Fetch certifications
+      const { data: certs } = await supabase
+        .from('course_certificates')
+        .select('certification_id')
+        .eq('student_id', patient.id);
+
+      if (certs) {
+        setCertifications(new Set(certs.map(c => c.certification_id).filter(Boolean)));
+      }
+    } catch (error) {
+      logger.error('Error fetching student progress:', error);
+    }
+  };
 
   useEffect(() => {
     let filtered = [...herbs];
+
+    // Course-gated filter for students
+    if (activeRole === 'patient') {
+      filtered = filtered.filter((herb) => {
+        // Show all products if admin/instructor, or if student has completed required course/certification
+        if (herb.required_course_id && !completedCourses.has(herb.required_course_id)) {
+          return false; // Hide if course requirement not met
+        }
+        if (herb.required_certification_id && !certifications.has(herb.required_certification_id)) {
+          return false; // Hide if certification requirement not met
+        }
+        return true;
+      });
+    }
 
     // Search filter
     if (searchQuery.trim() !== '') {
@@ -141,7 +201,7 @@ export default function Herbs() {
     });
 
     setFilteredHerbs(filtered);
-  }, [searchQuery, herbs, selectedCategory, sortBy, sortOrder, showInStockOnly, showLowStockOnly, activeRole]);
+  }, [searchQuery, herbs, selectedCategory, sortBy, sortOrder, showInStockOnly, showLowStockOnly, activeRole, completedCourses, certifications]);
 
   const fetchHerbs = async () => {
     try {
@@ -169,7 +229,7 @@ export default function Herbs() {
       
       setHerbs(typedData);
     } catch (error) {
-      console.error('Error fetching herbs:', error);
+      logger.error('Error fetching herbs:', error);
       toast({
         title: 'Error',
         description: 'Failed to load herbs catalog',
@@ -419,6 +479,15 @@ export default function Herbs() {
                       className="absolute top-2 right-2"
                     >
                       {herb.stock_quantity === 0 ? 'Out of Stock' : 'Low Stock'}
+                    </Badge>
+                  )}
+                  {(herb.required_course_id || herb.required_certification_id) && activeRole === 'patient' && (
+                    <Badge
+                      variant="secondary"
+                      className="absolute top-2 left-2 bg-yellow-600 text-white"
+                    >
+                      <Lock className="h-3 w-3 mr-1" />
+                      Restricted
                     </Badge>
                   )}
                   {herb.stock_quantity !== null && (

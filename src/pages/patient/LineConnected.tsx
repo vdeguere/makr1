@@ -46,7 +46,7 @@ export default function LineConnected() {
               
             </a>
 
-            <Button onClick={() => navigate('/dashboard/patient/records')} className="w-full" size="lg">
+            <Button onClick={() => navigate('/dashboard/student/records')} className="w-full" size="lg">
               View My Health Records
             </Button>
           </div>

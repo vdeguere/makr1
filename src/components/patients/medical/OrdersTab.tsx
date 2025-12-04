@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import { logger } from "@/lib/logger";
 import { Separator } from "@/components/ui/separator";
 
 interface OrdersTabProps {
@@ -229,7 +230,7 @@ export function OrdersTab({ patientId }: OrdersTabProps) {
       toast.success('Prescription duplicated successfully');
       refetchRecs();
     } catch (error) {
-      console.error('Error duplicating prescription:', error);
+      logger.error('Error duplicating prescription:', error);
       toast.error('Failed to duplicate prescription');
     }
   };
@@ -259,7 +260,7 @@ export function OrdersTab({ patientId }: OrdersTabProps) {
       setIsDeleteOpen(false);
       setSelectedRecommendation(null);
     } catch (error) {
-      console.error('Error deleting prescription:', error);
+      logger.error('Error deleting prescription:', error);
       toast.error('Failed to delete prescription');
     } finally {
       setIsDeleting(false);
@@ -282,7 +283,7 @@ export function OrdersTab({ patientId }: OrdersTabProps) {
         throw new Error('No checkout URL returned');
       }
     } catch (error) {
-      console.error('Error generating checkout link:', error);
+      logger.error('Error generating checkout link:', error);
       toast.error('Failed to generate checkout link. Please try again.');
     } finally {
       setLoadingCheckout(null);
@@ -333,7 +334,7 @@ export function OrdersTab({ patientId }: OrdersTabProps) {
       toast.success('Reorder created as draft prescription');
       refetchRecs();
     } catch (error) {
-      console.error('Error reordering:', error);
+      logger.error('Error reordering:', error);
       toast.error('Failed to create reorder');
     }
   };

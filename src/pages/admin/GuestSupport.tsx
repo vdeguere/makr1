@@ -20,6 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -92,7 +93,7 @@ export default function GuestSupport() {
       toast.success('Status updated successfully');
     },
     onError: (error) => {
-      console.error('Error updating status:', error);
+      logger.error('Error updating status:', error);
       toast.error('Failed to update status');
     },
   });
@@ -120,7 +121,7 @@ export default function GuestSupport() {
       setReply('');
     },
     onError: (error) => {
-      console.error('Error sending reply:', error);
+      logger.error('Error sending reply:', error);
       toast.error('Failed to send reply');
     },
   });

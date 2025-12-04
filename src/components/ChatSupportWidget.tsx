@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { EscalationDialog } from '@/components/chat/EscalationDialog';
 import { ProductCard } from '@/components/chat/ProductCard';
+import { logger } from '@/lib/logger';
 
 interface Message {
   id: string;
@@ -68,7 +69,7 @@ const ChatSupportWidget = () => {
       try {
         setButtonPosition(JSON.parse(storedPosition));
       } catch (error) {
-        console.error('Error loading button position:', error);
+        logger.error('Error loading button position:', error);
         setButtonPosition({
           x: window.innerWidth - 96,
           y: window.innerHeight - 96
@@ -164,7 +165,7 @@ const ChatSupportWidget = () => {
       playTone(1000, currentTime + 0.15, 0.15); // Second tone (higher pitch)
       
     } catch (error) {
-      console.error('Error playing notification sound:', error);
+      logger.error('Error playing notification sound:', error);
     }
   };
 
@@ -221,7 +222,7 @@ const ChatSupportWidget = () => {
         }
       }
     } catch (error: any) {
-      console.error('Chat error:', error);
+      logger.error('Chat error:', error);
       
       let errorMessage = t('error');
       if (error.message?.includes('Rate limit') || error.message?.includes('429')) {

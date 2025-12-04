@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 export default function LiveMeetingPlayer() {
   const { meetingId } = useParams();
@@ -62,7 +63,7 @@ export default function LiveMeetingPlayer() {
         .single();
 
       if (error && !error.message.includes('duplicate')) {
-        console.error('Failed to track attendance:', error);
+        logger.error('Failed to track attendance:', error);
       }
     };
 

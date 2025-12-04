@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { logger } from '@/lib/logger';
 import { messageSchema, type MessageFormData } from '@/lib/validations/message';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -101,7 +102,7 @@ export function NewMessageDialog({
 
       setRecipients(recipientList);
     } catch (error) {
-      console.error('Error fetching recipients:', error);
+      logger.error('Error fetching recipients:', error);
     } finally {
       setLoadingRecipients(false);
     }
@@ -137,7 +138,7 @@ export function NewMessageDialog({
       onOpenChange(false);
       onMessageSent();
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message:', error);
       toast.error('Failed to send message');
     } finally {
       setSending(false);

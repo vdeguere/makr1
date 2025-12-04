@@ -76,8 +76,14 @@ serve(async (req) => {
 });
 
 async function handleCheckoutSession(session: Stripe.Checkout.Session, supabaseClient: any) {
-
   const metadata = session.metadata;
+  
+  // Handle course enrollment checkout
+  if (metadata?.course_id && metadata?.user_id) {
+    return handleCourseEnrollmentCheckout(session, supabaseClient, metadata);
+  }
+
+  // Handle recommendation checkout (existing flow)
   if (!metadata || !metadata.token || !metadata.recommendation_id) {
     throw new Error("Missing required metadata");
   }
@@ -172,6 +178,128 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session, supabaseC
   }
 
   console.log("stripe-webhook: checkout session processed");
+}
+
+async function handleCourseEnrollmentCheckout(
+  session: Stripe.Checkout.Session,
+  supabaseClient: any,
+  metadata: Record<string, string>
+) {
+  const courseId = metadata.course_id;
+  const userId = metadata.user_id;
+  const includedProducts = JSON.parse(metadata.included_products || "[]");
+  const includedKits = JSON.parse(metadata.included_kits || "[]");
+
+  console.log("stripe-webhook: processing course enrollment", { courseId, userId });
+
+  // Get user profile
+  const { data: profile } = await supabaseClient
+    .from("profiles")
+    .select("id, full_name")
+    .eq("id", userId)
+    .single();
+
+  // Get or create patient record for the student
+  let patientId: string | null = null;
+  const { data: existingPatient } = await supabaseClient
+    .from("patients")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existingPatient) {
+    patientId = existingPatient.id;
+  } else {
+    // Get admin or first practitioner to link student to
+    const { data: adminProfile } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .limit(1)
+      .maybeSingle();
+
+    if (adminProfile) {
+      const { data: newPatient, error: patientError } = await supabaseClient
+        .from("patients")
+        .insert({
+          practitioner_id: adminProfile.id,
+          full_name: profile?.full_name || "Student",
+          user_id: userId,
+        })
+        .select("id")
+        .single();
+
+      if (!patientError && newPatient) {
+        patientId = newPatient.id;
+      }
+    }
+  }
+
+  // Create enrollment
+  const { data: enrollment, error: enrollmentError } = await supabaseClient
+    .from("course_enrollments")
+    .insert({
+      course_id: courseId,
+      user_id: userId,
+    })
+    .select()
+    .single();
+
+  if (enrollmentError) {
+    console.error("stripe-webhook: enrollment creation failed", enrollmentError);
+    throw new Error("Failed to create enrollment");
+  }
+
+  console.log("stripe-webhook: enrollment created", enrollment.id);
+
+  // Create orders for included products
+  if (includedProducts.length > 0 && patientId) {
+    for (const productId of includedProducts) {
+      const { data: product } = await supabaseClient
+        .from("herbs")
+        .select("id, name, retail_price")
+        .eq("id", productId)
+        .single();
+
+      if (product) {
+        await supabaseClient.from("orders").insert({
+          enrollment_id: enrollment.id,
+          patient_id: patientId,
+          total_amount: product.retail_price || 0,
+          status: "pending",
+          order_type: "course_kit",
+          payment_status: "paid",
+          paid_at: new Date().toISOString(),
+          stripe_session_id: session.id,
+        });
+      }
+    }
+  }
+
+  // Create orders for included kits
+  if (includedKits.length > 0 && patientId) {
+    for (const kitId of includedKits) {
+      const { data: kit } = await supabaseClient
+        .from("product_kits")
+        .select("id, name, price")
+        .eq("id", kitId)
+        .single();
+
+      if (kit) {
+        await supabaseClient.from("orders").insert({
+          enrollment_id: enrollment.id,
+          patient_id: patientId,
+          total_amount: kit.price || 0,
+          status: "pending",
+          order_type: "course_kit",
+          payment_status: "paid",
+          paid_at: new Date().toISOString(),
+          stripe_session_id: session.id,
+        });
+      }
+    }
+  }
+
+  console.log("stripe-webhook: course enrollment checkout processed");
 }
 
 async function handlePaymentIntent(paymentIntent: Stripe.PaymentIntent, supabaseClient: any) {

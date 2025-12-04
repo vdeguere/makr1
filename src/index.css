@@ -17,7 +17,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 20%;
 
-    --primary: 28 90% 55%;
+    --primary: 215 19% 35%; /* Academy Slate #475569 */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 15% 96%;
@@ -26,32 +26,32 @@ All colors MUST be HSL.
     --muted: 220 15% 96%;
     --muted-foreground: 220 8% 50%;
 
-    --accent: 28 85% 95%;
-    --accent-foreground: 28 90% 45%;
+    --accent: 200 85% 95%;
+    --accent-foreground: 200 90% 45%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 28 90% 55%;
+    --ring: 215 19% 35%; /* Academy Slate */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --hero-badge-bg: 28 85% 95%;
-    --hero-badge-text: 28 90% 40%;
+    --hero-badge-bg: 200 85% 95%;
+    --hero-badge-text: 200 90% 40%;
     
     --stat-value: 220 10% 20%;
     --stat-label: 220 8% 50%;
 
     --sidebar: 0 0% 100%;
     --sidebar-foreground: 220 10% 20%;
-    --sidebar-primary: 28 90% 55%;
+    --sidebar-primary: 215 19% 35%; /* Academy Slate */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 96%;
     --sidebar-accent-foreground: 220 10% 20%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 28 90% 55%;
+    --sidebar-ring: 215 19% 35%; /* Academy Slate */
   }
 
   .dark {
@@ -64,8 +64,8 @@ All colors MUST be HSL.
     --popover: 150 8% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 28 85% 60%;
-    --primary-foreground: 150 8% 8%;
+    --primary: 215 25% 45%; /* Academy Slate (lighter for dark mode) */
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 150 8% 15%;
     --secondary-foreground: 0 0% 98%;
@@ -81,22 +81,22 @@ All colors MUST be HSL.
 
     --border: 150 8% 20%;
     --input: 150 8% 20%;
-    --ring: 28 85% 60%;
+    --ring: 215 25% 45%; /* Academy Slate (lighter for dark mode) */
 
-    --hero-badge-bg: 28 30% 20%;
-    --hero-badge-text: 28 85% 70%;
+    --hero-badge-bg: 200 30% 20%;
+    --hero-badge-text: 200 85% 70%;
     
     --stat-value: 0 0% 98%;
     --stat-label: 150 5% 65%;
 
     --sidebar: 150 8% 10%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 28 85% 60%;
-    --sidebar-primary-foreground: 150 8% 8%;
+    --sidebar-primary: 215 25% 45%; /* Academy Slate (lighter for dark mode) */
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 150 8% 15%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 150 8% 20%;
-    --sidebar-ring: 28 85% 60%;
+    --sidebar-ring: 215 25% 45%; /* Academy Slate */
   }
 }
 

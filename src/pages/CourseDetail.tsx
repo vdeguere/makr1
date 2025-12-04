@@ -14,6 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { CourseProgressTracker } from '@/components/courses/CourseProgressTracker';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { logger } from '@/lib/logger';
 
 interface CourseDetails {
   id: string;
@@ -29,6 +30,9 @@ interface CourseDetails {
   is_enrolled: boolean;
   enrollment_id?: string;
   completion_percentage: number;
+  price: number | null;
+  included_products: string[] | null;
+  included_kits: string[] | null;
 }
 
 interface Lesson {
@@ -63,10 +67,10 @@ export default function CourseDetail() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch course details
+      // Fetch course details including pricing and included items
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('*')
+        .select('*, included_products, included_kits, price')
         .eq('id', courseId)
         .single();
 
@@ -114,7 +118,7 @@ export default function CourseDetail() {
         is_completed: completedLessons.has(lesson.id),
       })) || []);
     } catch (error) {
-      console.error('Error fetching course details:', error);
+      logger.error('Error fetching course details:', error);
       toast({
         title: 'Error',
         description: 'Failed to load course details',
@@ -131,31 +135,176 @@ export default function CourseDetail() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('course_enrollments')
-        .insert({
-          course_id: courseId!,
-          user_id: user.id,
+      // Check if course has a price
+      if (course?.price && course.price > 0) {
+        // Paid course - create Stripe checkout session
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-course-checkout-session', {
+          body: {
+            course_id: courseId!,
+            user_id: user.id,
+          },
         });
 
-      if (error) throw error;
+        if (checkoutError) throw checkoutError;
 
-      toast({
-        title: 'Success',
-        description: 'Successfully enrolled in course',
-      });
+        if (checkoutData?.error) {
+          throw new Error(checkoutData.error);
+        }
 
-      fetchCourseDetails();
+        // Redirect to Stripe Checkout
+        if (checkoutData?.url) {
+          window.location.href = checkoutData.url;
+          return;
+        }
+      } else {
+        // Free course - enroll directly and create kit orders
+        await enrollAndCreateKitOrders(user.id);
+      }
     } catch (error) {
-      console.error('Error enrolling:', error);
+      logger.error('Error enrolling:', error);
       toast({
         title: 'Error',
-        description: 'Failed to enroll in course',
+        description: error instanceof Error ? error.message : 'Failed to enroll in course',
         variant: 'destructive',
       });
     } finally {
       setEnrolling(false);
     }
+  };
+
+  const enrollAndCreateKitOrders = async (userId: string) => {
+    // Get user profile to get name for patient record
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .eq('id', userId)
+      .single();
+
+    // Get or create patient record for the student
+    // In academy model, students are stored in patients table
+    // Patients table has user_id field to link to auth.users
+    let patientId: string | null = null;
+
+    // Try to find existing patient record by user_id
+    const { data: existingPatient } = await supabase
+      .from('patients')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existingPatient) {
+      patientId = existingPatient.id;
+    } else {
+      // Get admin or first practitioner to link student to
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+
+      if (adminProfile) {
+        // Create patient record for student
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert({
+            practitioner_id: adminProfile.id,
+            full_name: profile?.full_name || 'Student',
+            user_id: userId,
+          })
+          .select('id')
+          .single();
+
+        if (patientError) {
+          logger.error('Error creating patient record:', patientError);
+          // Continue without patient record - orders will need patient_id
+        } else {
+          patientId = newPatient.id;
+        }
+      }
+    }
+
+    // Create enrollment
+    const { data: enrollment, error: enrollmentError } = await supabase
+      .from('course_enrollments')
+      .insert({
+        course_id: courseId!,
+        user_id: userId,
+      })
+      .select()
+      .single();
+
+    if (enrollmentError) throw enrollmentError;
+
+    // Create orders for included products
+    if (course?.included_products && Array.isArray(course.included_products) && course.included_products.length > 0 && patientId) {
+      for (const productId of course.included_products) {
+        // Get product details
+        const { data: product, error: productError } = await supabase
+          .from('herbs')
+          .select('id, name, retail_price')
+          .eq('id', productId)
+          .single();
+
+        if (productError) {
+          logger.error(`Error fetching product ${productId}:`, productError);
+          continue;
+        }
+
+        const { error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            enrollment_id: enrollment.id,
+            patient_id: patientId,
+            total_amount: product.retail_price || 0,
+            status: 'pending',
+            order_type: 'course_kit',
+          });
+
+        if (orderError) {
+          logger.error(`Error creating order for product ${productId}:`, orderError);
+        }
+      }
+    }
+
+    // Create orders for included kits
+    if (course?.included_kits && Array.isArray(course.included_kits) && course.included_kits.length > 0 && patientId) {
+      for (const kitId of course.included_kits) {
+        // Get kit details
+        const { data: kit, error: kitError } = await supabase
+          .from('product_kits')
+          .select('id, name, price')
+          .eq('id', kitId)
+          .single();
+
+        if (kitError) {
+          logger.error(`Error fetching kit ${kitId}:`, kitError);
+          continue;
+        }
+
+        const { error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            enrollment_id: enrollment.id,
+            patient_id: patientId,
+            total_amount: kit.price || 0,
+            status: 'pending',
+            order_type: 'course_kit',
+          });
+
+        if (orderError) {
+          logger.error(`Error creating order for kit ${kitId}:`, orderError);
+        }
+      }
+    }
+
+    toast({
+      title: 'Success',
+      description: patientId && (course?.included_products?.length || course?.included_kits?.length) 
+        ? 'Successfully enrolled in course! Your starter kit will be shipped soon.'
+        : 'Successfully enrolled in course!',
+    });
+
+    fetchCourseDetails();
   };
 
   const formatDuration = (seconds: number) => {
@@ -252,6 +401,37 @@ export default function CourseDetail() {
               <p className="text-muted-foreground leading-relaxed">{course.description}</p>
             </section>
 
+            {/* What's Included Section */}
+            {(course?.included_products?.length || course?.included_kits?.length) && (
+              <section>
+                <h2 className="text-2xl font-bold mb-4">What's Included</h2>
+                <Card>
+                  <CardContent className="pt-6">
+                    {course.included_products && course.included_products.length > 0 && (
+                      <div className="mb-4">
+                        <h3 className="font-semibold mb-2">Products Included:</h3>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {course.included_products.map((productId: string) => (
+                            <li key={productId}>Product ID: {productId}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {course.included_kits && course.included_kits.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Starter Kits Included:</h3>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          {course.included_kits.map((kitId: string) => (
+                            <li key={kitId}>Kit ID: {kitId}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* Course Details with Tabs */}
             <section>
               <h2 className="text-2xl font-bold mb-4">Course Details</h2>
@@ -305,7 +485,11 @@ export default function CourseDetail() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Price</h3>
-                    <p className="text-2xl font-bold text-green-600">Free</p>
+                    {course.price && course.price > 0 ? (
+                      <p className="text-2xl font-bold text-green-600">${course.price.toFixed(2)}</p>
+                    ) : (
+                      <p className="text-2xl font-bold text-green-600">Free</p>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Get Started</h3>

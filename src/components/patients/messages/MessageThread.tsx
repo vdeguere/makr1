@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Send, ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { logger } from '@/lib/logger';
 import {
   Form,
   FormControl,
@@ -104,7 +105,7 @@ export function MessageThread({
       form.reset();
       onMessageSent();
     } catch (error) {
-      console.error('Error sending reply:', error);
+      logger.error('Error sending reply:', error);
       toast.error('Failed to send reply');
     } finally {
       setSending(false);

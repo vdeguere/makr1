@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Plus, Upload, Trash2, FileText, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 
 interface Resource {
   id: string;
@@ -113,7 +114,7 @@ export function ResourceFormDialog({
       fetchResources();
       onSuccess();
     } catch (error: any) {
-      console.error('Error uploading resource:', error);
+      logger.error('Error uploading resource:', error);
       toast({
         title: 'Upload failed',
         description: error.message || 'Failed to upload resource',

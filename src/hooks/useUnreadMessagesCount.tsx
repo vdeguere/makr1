@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/lib/logger';
 
 export function useUnreadMessagesCount() {
   const { user } = useAuth();
@@ -21,7 +22,7 @@ export function useUnreadMessagesCount() {
         if (error) throw error;
         setCount(unreadCount || 0);
       } catch (error) {
-        console.error('Error fetching unread message count:', error);
+        logger.error('Error fetching unread message count:', error);
       }
     };
 

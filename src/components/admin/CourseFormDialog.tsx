@@ -24,6 +24,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Plus, X, Upload, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CourseFormDialogProps {
@@ -167,7 +168,7 @@ export function CourseFormDialog({ open, onOpenChange, course, onSuccess }: Cour
         description: 'Thumbnail uploaded successfully',
       });
     } catch (error: any) {
-      console.error('Error uploading thumbnail:', error);
+      logger.error('Error uploading thumbnail:', error);
       toast({
         title: 'Upload failed',
         description: error.message || 'Failed to upload thumbnail',

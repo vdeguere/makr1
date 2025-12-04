@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Upload } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 const certificationSchema = z.object({
   certification_name: z.string().min(1, 'Certification name is required'),
@@ -92,7 +93,7 @@ export function CertificationFormDialog({
       if (uploadError) throw uploadError;
       return fileName;
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       toast({
         title: "Upload Failed",
         description: "Failed to upload file",
@@ -148,7 +149,7 @@ export function CertificationFormDialog({
       });
       onSuccess();
     } catch (error) {
-      console.error('Error saving certification:', error);
+      logger.error('Error saving certification:', error);
       toast({
         title: "Error",
         description: "Failed to save certification",

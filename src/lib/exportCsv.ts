@@ -1,4 +1,5 @@
 // CSV Export Utilities
+import { logger } from './logger';
 
 export interface ExportColumn {
   key: string;
@@ -12,7 +13,7 @@ export const exportToCSV = (
   filename: string
 ) => {
   if (!data || data.length === 0) {
-    console.warn('No data to export');
+    logger.warn('No data to export');
     return;
   }
 

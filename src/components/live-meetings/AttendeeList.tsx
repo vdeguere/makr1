@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface AttendeeListProps {
   attendees: Array<{
@@ -59,7 +60,7 @@ export function AttendeeList({ attendees: initialAttendees, meetingId }: Attende
         setAttendees([]);
       }
     } catch (error) {
-      console.error('Error enriching attendees:', error);
+      logger.error('Error enriching attendees:', error);
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export function AttendeeList({ attendees: initialAttendees, meetingId }: Attende
         setAttendees([]);
       }
     } catch (error) {
-      console.error('Error fetching attendees:', error);
+      logger.error('Error fetching attendees:', error);
     } finally {
       setLoading(false);
     }

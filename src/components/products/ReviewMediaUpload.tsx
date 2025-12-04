@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface MediaItem {
   url: string;
@@ -92,7 +93,7 @@ export function ReviewMediaUpload({
         description: `${uploadedMedia.length} file(s) uploaded successfully`,
       });
     } catch (error: any) {
-      console.error("Error uploading media:", error);
+      logger.error("Error uploading media:", error);
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload media",

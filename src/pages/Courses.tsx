@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, BookOpen, GraduationCap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logger';
 
 interface Course {
   id: string;
@@ -68,7 +69,7 @@ export default function Courses() {
 
       setCourses(coursesWithEnrollment);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      logger.error('Error fetching courses:', error);
       toast({
         title: 'Error',
         description: 'Failed to load courses',

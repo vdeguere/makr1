@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface SalesData {
   total_sales: number;
@@ -195,7 +196,7 @@ export default function PractitionerAnalytics() {
         order_count: orderCount,
       });
     } catch (error) {
-      console.error('Error fetching sales data:', error);
+      logger.error('Error fetching sales data:', error);
     } finally {
       setLoading(false);
     }

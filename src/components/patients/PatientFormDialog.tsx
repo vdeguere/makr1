@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,8 @@ import { patientSchema } from '@/lib/validations/patient';
 import { z } from 'zod';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { uploadPatientAvatar, deletePatientAvatar, getPatientInitials } from '@/lib/avatarUtils';
+import { logger } from '@/lib/logger';
+import { LifestyleAssessment, type LifestyleData } from './skincare/LifestyleAssessment';
 
 interface PatientFormDialogProps {
   open: boolean;
@@ -34,6 +36,7 @@ interface PatientFormDialogProps {
     user_id: string | null;
     email_consent: boolean | null;
     profile_picture_url: string | null;
+    lifestyle_recommendations?: string | null;
   } | null;
 }
 
@@ -56,6 +59,53 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
     allergies: patient?.allergies || '',
     email_consent: patient?.email_consent || false,
   });
+  const [lifestyleData, setLifestyleData] = useState<LifestyleData | null>(null);
+
+  // Load lifestyle data when patient prop changes
+  useEffect(() => {
+    if (patient?.lifestyle_recommendations) {
+      try {
+        const parsed = JSON.parse(patient.lifestyle_recommendations) as LifestyleData;
+        setLifestyleData(parsed);
+      } catch (error) {
+        logger.error('Error parsing lifestyle recommendations:', error);
+        setLifestyleData(null);
+      }
+    } else {
+      setLifestyleData(null);
+    }
+  }, [patient?.lifestyle_recommendations]);
+
+  // Reset form when dialog opens/closes or patient changes
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        full_name: patient?.full_name || '',
+        email: patient?.email || '',
+        phone: patient?.phone || '',
+        date_of_birth: patient?.date_of_birth ? new Date(patient.date_of_birth) : undefined,
+        medical_history: patient?.medical_history || '',
+        allergies: patient?.allergies || '',
+        email_consent: patient?.email_consent || false,
+      });
+      setAvatarPreview(patient?.profile_picture_url || null);
+      setAvatarFile(null);
+    } else {
+      // Reset form when dialog closes
+      setFormData({
+        full_name: '',
+        email: '',
+        phone: '',
+        date_of_birth: undefined,
+        medical_history: '',
+        allergies: '',
+        email_consent: false,
+      });
+      setLifestyleData(null);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+    }
+  }, [open, patient]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,7 +160,7 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
         if (error) throw error;
         toast.success('Profile picture removed');
       } catch (error) {
-        console.error('Error removing avatar:', error);
+        logger.error('Error removing avatar:', error);
         toast.error('Failed to remove profile picture');
       } finally {
         setUploadingAvatar(false);
@@ -176,6 +226,7 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
         email_consent: validated.email ? validated.email_consent : false,
         practitioner_id: user.id,
         profile_picture_url: profilePictureUrl,
+        lifestyle_recommendations: lifestyleData ? JSON.stringify(lifestyleData) : null,
       };
 
       if (patient) {
@@ -198,7 +249,7 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
           });
         }
         
-        toast.success('Patient updated successfully');
+        toast.success('Student updated successfully');
       } else {
         // Create new patient
         const { data: newPatient, error } = await supabase
@@ -226,28 +277,17 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
           has_email_consent: patientData.email_consent,
         });
         
-        toast.success('Patient added successfully');
+        toast.success('Student added successfully');
       }
 
       onSuccess();
       onOpenChange(false);
-      
-      // Reset form
-      setFormData({
-        full_name: '',
-        email: '',
-        phone: '',
-        date_of_birth: undefined,
-        medical_history: '',
-        allergies: '',
-        email_consent: false,
-      });
     } catch (error) {
-      console.error('Error saving patient:', error);
+      logger.error('Error saving patient:', error);
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error('Failed to save patient');
+        toast.error('Failed to save student');
       }
     } finally {
       setLoading(false);
@@ -258,9 +298,9 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{patient ? 'Edit Patient' : 'Add New Patient'}</DialogTitle>
+          <DialogTitle>{patient ? 'Edit Student' : 'Add New Student'}</DialogTitle>
           <DialogDescription>
-            {patient ? 'Update patient information' : 'Enter the patient details below'}
+            {patient ? 'Update student information' : 'Enter the student details below'}
           </DialogDescription>
         </DialogHeader>
 
@@ -354,7 +394,7 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
                     className="rounded border-input"
                   />
                   <label htmlFor="email_consent" className="text-sm text-muted-foreground cursor-pointer">
-                    Patient consents to receive email communications
+                    Student consents to receive email communications
                   </label>
                 </div>
               )}
@@ -377,24 +417,31 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="medical_history">Medical History</Label>
+            <Label htmlFor="medical_history">Enrollment Notes</Label>
             <Textarea
               id="medical_history"
               value={formData.medical_history}
               onChange={(e) => setFormData({ ...formData, medical_history: e.target.value })}
-              placeholder="Enter relevant medical history..."
+              placeholder="Enter relevant background or learning goals..."
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="allergies">Allergies</Label>
+            <Label htmlFor="allergies">Known Allergies</Label>
             <Textarea
               id="allergies"
               value={formData.allergies}
               onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
-              placeholder="List any known allergies..."
+              placeholder="List any known allergies to materials or products..."
               rows={3}
+            />
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <LifestyleAssessment
+              value={lifestyleData || undefined}
+              onChange={(data) => setLifestyleData(data)}
             />
           </div>
 
@@ -404,7 +451,7 @@ export function PatientFormDialog({ open, onOpenChange, onSuccess, patient }: Pa
             </Button>
             <Button type="submit" disabled={loading || uploadingAvatar}>
               {(loading || uploadingAvatar) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {patient ? 'Update Patient' : 'Add Patient'}
+              {patient ? 'Update Student' : 'Add Student'}
             </Button>
           </DialogFooter>
         </form>

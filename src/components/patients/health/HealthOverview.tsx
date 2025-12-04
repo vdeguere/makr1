@@ -3,8 +3,8 @@ import { FileText, Package, ShoppingCart, Calendar } from 'lucide-react';
 
 interface HealthOverviewProps {
   stats: {
-    totalRecommendations: number;
-    activeRecommendations: number;
+    totalAssignments: number;
+    activeAssignments: number;
     completedOrders: number;
     upcomingVisits: number;
   };
@@ -13,14 +13,14 @@ interface HealthOverviewProps {
 export function HealthOverview({ stats }: HealthOverviewProps) {
   const cards = [
     {
-      title: 'Total Recommendations',
-      value: stats.totalRecommendations,
+      title: 'Total Assignments',
+      value: stats.totalAssignments,
       icon: FileText,
-      description: 'All recommendations received',
+      description: 'All assignments received',
     },
     {
-      title: 'Active Treatments',
-      value: stats.activeRecommendations,
+      title: 'Active Assignments',
+      value: stats.activeAssignments,
       icon: Package,
       description: 'Currently active',
     },
@@ -31,10 +31,10 @@ export function HealthOverview({ stats }: HealthOverviewProps) {
       description: 'Successfully delivered',
     },
     {
-      title: 'Upcoming Visits',
+      title: 'Upcoming Sessions',
       value: stats.upcomingVisits,
       icon: Calendar,
-      description: 'Scheduled appointments',
+      description: 'Scheduled live sessions',
     },
   ];
 

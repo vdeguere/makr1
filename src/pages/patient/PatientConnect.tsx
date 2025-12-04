@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export default function PatientConnect() {
   const { token } = useParams<{ token: string }>();
@@ -46,7 +47,7 @@ export default function PatientConnect() {
         setEmail(data.patient.email || '');
       }
     } catch (err) {
-      console.error('Error verifying token:', err);
+      logger.error('Error verifying token:', err);
       setValid(false);
       setError('Failed to verify connection link.');
     } finally {
@@ -111,10 +112,10 @@ export default function PatientConnect() {
 
       // Redirect to patient dashboard
       setTimeout(() => {
-        navigate('/dashboard/patient/records');
+        navigate('/dashboard/student/records');
       }, 1000);
     } catch (err: any) {
-      console.error('Error creating account:', err);
+      logger.error('Error creating account:', err);
       toast({
         title: 'Error',
         description: err.message || 'Failed to create account. Please try again.',

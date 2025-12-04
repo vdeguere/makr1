@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, History, Calendar, DollarSign, ExternalLink, Package } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { getStatusDisplayName, getStatusBadgeVariant } from '@/lib/orderUtils';
 import { CourierBadge } from '@/components/orders/CourierBadge';
@@ -58,7 +59,7 @@ export default function OrderHistory() {
         has_pending_orders: hasPendingOrders,
       });
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      logger.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
     }

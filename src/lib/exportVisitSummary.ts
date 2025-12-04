@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas';
 import bodyFrontImage from '@/assets/body-front.png';
 import bodyBackImage from '@/assets/body-back.png';
 import { iconMap } from '@/components/ui/icon-picker';
+import { logger } from './logger';
 
 interface BodyMarker {
   id: string;
@@ -418,7 +419,7 @@ export const exportVisitSummaryToPDF = async (
 
     return true;
   } catch (error) {
-    console.error('Error exporting visit summary:', error);
+    logger.error('Error exporting visit summary:', error);
     throw error;
   }
 };

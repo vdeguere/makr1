@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, BookOpen, GraduationCap, Award, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logger';
 
 interface EnrolledCourse {
   id: string;
@@ -69,7 +70,7 @@ export default function MyCourses() {
 
       setEnrolledCourses(data || []);
     } catch (error) {
-      console.error('Error fetching enrolled courses:', error);
+      logger.error('Error fetching enrolled courses:', error);
       toast({
         title: 'Error',
         description: 'Failed to load enrolled courses',
@@ -99,7 +100,7 @@ export default function MyCourses() {
         });
       }
     } catch (error) {
-      console.error('Error generating certificate:', error);
+      logger.error('Error generating certificate:', error);
       toast({
         title: 'Error',
         description: 'Failed to generate certificate. Please try again.',

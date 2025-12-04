@@ -50,7 +50,7 @@ export function DashboardHeader() {
           <SidebarTrigger className="ml-1" />
         </div>
         <h1 className="text-fluid-lg sm:text-fluid-xl font-semibold truncate">
-          <span className="hidden sm:inline">Charm Sense</span>
+          <span className="hidden sm:inline">Makr Academy</span>
           <span className="sm:hidden">Dashboard</span>
         </h1>
         {import.meta.env.DEV && (

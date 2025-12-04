@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CheckCircle2, Download, FileText, Play, Pause, ClipboardList } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Download, FileText, Play, Pause, ClipboardList, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import LessonQuiz from '@/components/quiz/LessonQuiz';
+import { SkillSubmissionDialog } from '@/components/students/skills/SkillSubmissionDialog';
 
 interface Lesson {
   id: string;
@@ -37,10 +39,12 @@ export default function CourseLearning() {
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
   const [enrollmentId, setEnrollmentId] = useState<string>('');
+  const [studentId, setStudentId] = useState<string>('');
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [hasQuiz, setHasQuiz] = useState(false);
+  const [showSubmissionDialog, setShowSubmissionDialog] = useState(false);
 
   useEffect(() => {
     fetchCourseData();
@@ -106,6 +110,17 @@ export default function CourseLearning() {
       setEnrollmentId(enrollment.id);
       setCompletionPercentage(enrollment.completion_percentage);
 
+      // Fetch student ID (patient ID) for the current user
+      const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (patient) {
+        setStudentId(patient.id);
+      }
+
       const { data: lessonsData } = await supabase
         .from('course_lessons')
         .select('id, title, content_url, video_duration_seconds, lesson_type')
@@ -134,7 +149,7 @@ export default function CourseLearning() {
         await checkLessonQuiz(firstIncomplete.id);
       }
     } catch (error) {
-      console.error('Error:', error);
+      logger.error('Error:', error);
     }
   };
 
@@ -280,12 +295,18 @@ export default function CourseLearning() {
                   <div className="p-fluid-4">
                     <div className="flex items-center justify-between">
                       <h2 className="text-fluid-xl font-bold">{currentLesson.title}</h2>
-                      {hasQuiz && (
-                        <Button onClick={() => setShowQuiz(true)} variant="outline">
-                          <ClipboardList className="mr-2 h-4 w-4" />
-                          Take Quiz
+                      <div className="flex items-center gap-2">
+                        <Button onClick={() => setShowSubmissionDialog(true)} variant="outline">
+                          <Camera className="mr-2 h-4 w-4" />
+                          Submit Work
                         </Button>
-                      )}
+                        {hasQuiz && (
+                          <Button onClick={() => setShowQuiz(true)} variant="outline">
+                            <ClipboardList className="mr-2 h-4 w-4" />
+                            Take Quiz
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -297,6 +318,24 @@ export default function CourseLearning() {
                 lessonId={currentLesson.id}
                 enrollmentId={enrollmentId}
                 onComplete={handleQuizComplete}
+              />
+            )}
+
+            {currentLesson && showSubmissionDialog && enrollmentId && studentId && (
+              <SkillSubmissionDialog
+                open={showSubmissionDialog}
+                onOpenChange={setShowSubmissionDialog}
+                studentId={studentId}
+                enrollmentId={enrollmentId}
+                lessonId={currentLesson.id}
+                lessonName={currentLesson.title}
+                onSuccess={() => {
+                  setShowSubmissionDialog(false);
+                  toast({
+                    title: 'Work Submitted',
+                    description: 'Your submission has been sent for review.',
+                  });
+                }}
               />
             )}
 

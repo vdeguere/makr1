@@ -28,6 +28,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import PatientManagement from "./pages/admin/PatientManagement";
 import SupportMessages from "./pages/admin/SupportMessages";
 import GuestSupport from "./pages/admin/GuestSupport";
+import ContactSubmissions from "./pages/admin/ContactSubmissions";
 import CourseManagement from "./pages/admin/CourseManagement";
 import CourseBuilder from "./pages/admin/CourseBuilder";
 import LessonManagement from "./pages/admin/LessonManagement";
@@ -38,7 +39,7 @@ import AdminPageViews from "./pages/admin/insights/PageViews";
 import AdminCourses from "./pages/admin/insights/Courses";
 import PractitionerAnalytics from "./pages/practitioner/Analytics";
 import PractitionerMessages from "./pages/practitioner/Messages";
-import HealthRecords from "./pages/patient/HealthRecords";
+import StudentRecords from "./pages/student/StudentRecords";
 import OrderHistory from "./pages/patient/OrderHistory";
 import Messages from "./pages/patient/Messages";
 import Patients from "./pages/Patients";
@@ -63,6 +64,9 @@ import LiveMeetings from "./pages/LiveMeetings";
 import LiveMeetingPlayer from "./pages/LiveMeetingPlayer";
 import LiveMeetingManagement from "./pages/admin/LiveMeetingManagement";
 import MyLiveMeetings from "./pages/practitioner/MyLiveMeetings";
+import ProgressMetrics from "./pages/admin/ProgressMetrics";
+import StudentProgress from "./pages/practitioner/StudentProgress";
+import Submissions from "./pages/practitioner/Submissions";
 
 const queryClient = new QueryClient();
 
@@ -229,6 +233,14 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/dashboard/admin/contact-submissions"
+            element={
+              <ProtectedRoute requiredRole={["admin", "dev"]}>
+                <ContactSubmissions />
+              </ProtectedRoute>
+            } 
+          />
           <Route
             path="/dashboard/admin/insights/analytics"
             element={
@@ -294,10 +306,10 @@ const App = () => (
             } 
           />
           <Route 
-            path="/dashboard/patient/records" 
+            path="/dashboard/student/records" 
             element={
               <ProtectedRoute requiredRole="patient">
-                <HealthRecords />
+                <StudentRecords />
               </ProtectedRoute>
             } 
           />
@@ -380,6 +392,30 @@ const App = () => (
             element={
               <ProtectedRoute requiredRole="practitioner">
                 <MyLiveMeetings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/practitioner/submissions" 
+            element={
+              <ProtectedRoute requiredRole={["practitioner", "admin", "dev"]}>
+                <Submissions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/practitioner/students/:studentId/progress" 
+            element={
+              <ProtectedRoute requiredRole={["practitioner", "admin", "dev"]}>
+                <StudentProgress />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/admin/progress-metrics" 
+            element={
+              <ProtectedRoute requiredRole={["admin", "dev"]}>
+                <ProgressMetrics />
               </ProtectedRoute>
             } 
           />

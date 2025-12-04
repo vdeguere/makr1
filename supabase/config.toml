@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.escalate-chat-support]
 verify_jwt = false
+
+[functions.submit-contact-form]
+verify_jwt = false

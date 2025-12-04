@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Download, X, Share, Plus } from 'lucide-react';
 import { isIOS, isAndroid } from '@/lib/platformDetection';
+import { logger } from '@/lib/logger';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -89,7 +90,7 @@ export const PWAInstallPrompt = () => {
 
       if (outcome === 'accepted') {
         trackEvent('pwa_install_success', { platform });
-        console.log('PWA installed');
+        logger.log('PWA installed');
       } else {
         trackEvent('pwa_install_cancelled', { platform });
       }
@@ -98,7 +99,7 @@ export const PWAInstallPrompt = () => {
         platform,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
-      console.error('PWA installation error:', error);
+      logger.error('PWA installation error:', error);
     }
 
     setDeferredPrompt(null);

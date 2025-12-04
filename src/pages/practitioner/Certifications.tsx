@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { CertificationCard } from '@/components/practitioner/certifications/CertificationCard';
 import { CertificationFormDialog } from '@/components/practitioner/certifications/CertificationFormDialog';
+import { logger } from '@/lib/logger';
 
 export default function Certifications() {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ export default function Certifications() {
       if (error) throw error;
       setCertifications(data || []);
     } catch (error) {
-      console.error('Error fetching certifications:', error);
+      logger.error('Error fetching certifications:', error);
       toast({
         title: "Error",
         description: "Failed to load certifications",
@@ -65,7 +66,7 @@ export default function Certifications() {
       });
       fetchCertifications();
     } catch (error) {
-      console.error('Error deleting certification:', error);
+      logger.error('Error deleting certification:', error);
       toast({
         title: "Error",
         description: "Failed to delete certification",

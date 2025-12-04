@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Bridge component that syncs auth state with analytics.
@@ -62,7 +63,7 @@ export function AnalyticsAuthBridge() {
         setUserProperties(properties);
       }
     } catch (error) {
-      console.warn('Analytics: Failed to set user properties', error);
+      logger.warn('Analytics: Failed to set user properties', error);
     }
   };
 

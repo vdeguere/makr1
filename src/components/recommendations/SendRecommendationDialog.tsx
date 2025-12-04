@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { logger } from '@/lib/logger';
 
 interface SendRecommendationDialogProps {
   recommendationId: string;
@@ -53,7 +54,7 @@ export function SendRecommendationDialog({
       .single();
 
     if (error) {
-      console.error('Error checking channels:', error);
+      logger.error('Error checking channels:', error);
       toast({
         title: 'Channel Check Failed',
         description: 'Could not determine available notification channels',
@@ -119,7 +120,7 @@ export function SendRecommendationDialog({
         
         toast({
           title: isResend ? 'Recommendation Resent' : 'Recommendation Sent',
-          description: 'Patient has been notified successfully',
+          description: 'Student has been notified successfully',
         });
         onSuccess();
       } else {
@@ -139,8 +140,8 @@ export function SendRecommendationDialog({
         });
       }
     } catch (error: any) {
-      console.error('Error sending recommendation:', error);
-      console.error('Error details:', {
+      logger.error('Error sending recommendation:', error);
+      logger.error('Error details:', {
         status: error?.status,
         code: error?.code,
         message: error?.message,
@@ -179,7 +180,7 @@ export function SendRecommendationDialog({
         <DialogHeader>
           <DialogTitle>{isResend ? 'Resend Recommendation' : 'Send Recommendation'}</DialogTitle>
           <DialogDescription>
-            Choose how to notify the patient about their prescription
+            Choose how to notify the student about their assignment
           </DialogDescription>
         </DialogHeader>
 
@@ -227,7 +228,7 @@ export function SendRecommendationDialog({
 
           {!emailAvailable && !lineAvailable && (
             <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-lg">
-              No notification channels available for this patient. Please add an email or LINE ID to their profile.
+              No notification channels available for this student. Please add an email or LINE ID to their profile.
             </div>
           )}
 
@@ -237,7 +238,7 @@ export function SendRecommendationDialog({
               id="message"
               value={optionalMessage}
               onChange={(e) => setOptionalMessage(e.target.value)}
-              placeholder="Add a personal message to the patient..."
+              placeholder="Add a personal message to the student..."
               rows={3}
               maxLength={500}
               disabled={loading}

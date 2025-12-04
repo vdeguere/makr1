@@ -9,6 +9,7 @@ import { ReviewForm } from "./ReviewForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
 
 interface ProductReviewSectionProps {
   herbId: string;
@@ -67,7 +68,7 @@ export function ProductReviewSection({
       if (error) throw error;
       setReviews(data || []);
     } catch (error) {
-      console.error("Error fetching reviews:", error);
+      logger.error("Error fetching reviews:", error);
     } finally {
       setLoading(false);
     }
@@ -120,7 +121,7 @@ export function ProductReviewSection({
 
       setCanReview(hasReceived && !existingReview);
     } catch (error) {
-      console.error("Error checking review eligibility:", error);
+      logger.error("Error checking review eligibility:", error);
     }
   };
 
@@ -139,7 +140,7 @@ export function ProductReviewSection({
 
       setCanReview(!existingReview);
     } catch (error) {
-      console.error("Error checking review eligibility:", error);
+      logger.error("Error checking review eligibility:", error);
     }
   };
 

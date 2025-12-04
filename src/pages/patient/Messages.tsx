@@ -10,6 +10,7 @@ import { NewMessageDialog } from '@/components/patients/messages/NewMessageDialo
 import { MessageThread } from '@/components/patients/messages/MessageThread';
 import { ConversationList } from '@/components/messages/ConversationList';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Message {
   id: string;
@@ -96,8 +97,8 @@ export default function Messages() {
       if (error) throw error;
 
       if (!patient) {
-        console.error('No patient record found for user');
-        toast.error('Patient record not found. Please contact support.');
+        logger.error('No patient record found for user');
+        toast.error('Student record not found. Please contact support.');
         return;
       }
 
@@ -105,7 +106,7 @@ export default function Messages() {
       setPractitionerId(patient.practitioner_id);
       await fetchMessages(patient.id);
     } catch (error) {
-      console.error('Error fetching patient data:', error);
+      logger.error('Error fetching patient data:', error);
     } finally {
       setLoading(false);
       fetchingRef.current = false;
@@ -171,7 +172,7 @@ export default function Messages() {
               thread.recipientName = practitioner.full_name;
             }
           } catch (error) {
-            console.error('Error fetching practitioner name:', error);
+            logger.error('Error fetching practitioner name:', error);
             // Keep default "Doctor" name if fetch fails
           }
         }
@@ -198,7 +199,7 @@ export default function Messages() {
         setSelectedThread(sortedThreads[0]);
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      logger.error('Error fetching messages:', error);
     }
   };
 
@@ -218,7 +219,7 @@ export default function Messages() {
 
         await fetchMessages(patientId);
       } catch (error) {
-        console.error('Error marking messages as read:', error);
+        logger.error('Error marking messages as read:', error);
       }
     }
   };

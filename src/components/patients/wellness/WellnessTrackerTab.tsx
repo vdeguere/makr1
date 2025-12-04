@@ -8,6 +8,7 @@ import { WellnessCheckDialog } from './WellnessCheckDialog';
 import { WellnessTrendsChart } from './WellnessTrendsChart';
 import { format, subDays, subMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { logger } from '@/lib/logger';
 
 interface WellnessSurvey {
   id: string;
@@ -44,7 +45,7 @@ export function WellnessTrackerTab({ patientId }: WellnessTrackerTabProps) {
       if (error) throw error;
       setSurveys(data || []);
     } catch (error) {
-      console.error('Error fetching wellness surveys:', error);
+      logger.error('Error fetching wellness surveys:', error);
     } finally {
       setLoading(false);
     }

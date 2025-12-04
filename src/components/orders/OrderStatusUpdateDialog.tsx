@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { THAI_COURIERS, generateTrackingUrl, estimateDeliveryDate } from '@/lib/orderUtils';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
 interface OrderStatusUpdateDialogProps {
@@ -124,7 +125,7 @@ export function OrderStatusUpdateDialog({
         });
         
         if (error) {
-          console.error('Failed to send notification:', error);
+          logger.error('Failed to send notification:', error);
           toast({
             title: 'Warning',
             description: 'Order updated but notification failed to send.',

@@ -8,6 +8,7 @@ import { Plus, Search, Loader2 } from 'lucide-react';
 import { PatientCard } from './PatientCard';
 import { PatientFormDialog } from './PatientFormDialog';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Patient {
   id: string;
@@ -58,8 +59,8 @@ export function PatientsList() {
       if (error) throw error;
       setPatients(data || []);
     } catch (error) {
-      console.error('Error fetching patients:', error);
-      toast.error('Failed to load patients');
+      logger.error('Error fetching patients:', error);
+      toast.error('Failed to load students');
     } finally {
       setLoading(false);
     }

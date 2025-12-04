@@ -26,7 +26,7 @@ const LineConnect = () => {
         );
 
         if (error) {
-          console.error("Token verification error:", error);
+          logger.error("Token verification error:", error);
           navigate("/patient-connect/line-error?error=verification_failed");
           return;
         }
@@ -56,7 +56,7 @@ const LineConnect = () => {
         lineAuthUrl.searchParams.append("state", JSON.stringify({ token, origin: window.location.origin }));
         lineAuthUrl.searchParams.append("scope", "profile openid");
 
-        console.log("Redirecting to LINE OAuth:", lineAuthUrl.toString());
+        logger.debug("Redirecting to LINE OAuth:", lineAuthUrl.toString());
         
         // Small delay to show the redirecting message
         setTimeout(() => {
@@ -64,7 +64,7 @@ const LineConnect = () => {
         }, 500);
 
       } catch (err) {
-        console.error("Error initiating LINE connection:", err);
+        logger.error("Error initiating LINE connection:", err);
         navigate("/patient-connect/line-error?error=unexpected_error");
       }
     };

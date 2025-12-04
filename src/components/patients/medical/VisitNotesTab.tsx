@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Plus, FileText, Calendar, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { format } from 'date-fns';
-import { BodyDiagramMarker, type BodyMarker } from '../ttm/BodyDiagramMarker';
+import { FaceMapMarker, type FaceMarker } from '../skincare/FaceMapMarker';
 import { exportVisitSummaryToPDF } from '@/lib/exportVisitSummary';
+import { logger } from '@/lib/logger';
 
 interface VisitNote {
   subjective: string | null;
@@ -70,7 +71,7 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('basic');
-  const [activeBodyView, setActiveBodyView] = useState<'front' | 'back'>('front');
+  const [activeBodyView, setActiveBodyView] = useState<'front' | 'left' | 'right'>('front');
   const [patient, setPatient] = useState<any>(null);
   const [markerTypes, setMarkerTypes] = useState<any[]>([]);
   const [exportingVisitId, setExportingVisitId] = useState<string | null>(null);
@@ -117,11 +118,13 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
   });
 
   const [bodyDiagrams, setBodyDiagrams] = useState<{
-    front: BodyMarker[];
-    back: BodyMarker[];
+    front: FaceMarker[];
+    left: FaceMarker[];
+    right: FaceMarker[];
   }>({
     front: [],
-    back: [],
+    left: [],
+    right: [],
   });
 
   useEffect(() => {
@@ -141,7 +144,7 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
       if (error) throw error;
       setPatient(data);
     } catch (error: any) {
-      console.error('Error fetching patient:', error);
+      logger.error('Error fetching patient:', error);
     }
   };
 
@@ -157,7 +160,7 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
         setMarkerTypes(data);
       }
     } catch (error: any) {
-      console.error('Error fetching marker types:', error);
+      logger.error('Error fetching marker types:', error);
     }
   };
 
@@ -229,9 +232,9 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
             respiratory_rate: formData.respiratory_rate ? parseInt(formData.respiratory_rate) : null,
             oxygen_saturation: formData.oxygen_saturation ? parseInt(formData.oxygen_saturation) : null,
             vital_notes: formData.vital_notes || null,
-            // Body Diagrams
+            // Body Diagrams (Face Maps)
             body_diagram_front: bodyDiagrams.front as any,
-            body_diagram_back: bodyDiagrams.back as any,
+            body_diagram_back: { left: bodyDiagrams.left, right: bodyDiagrams.right } as any,
             // Examination
             general_appearance: formData.general_appearance || null,
             tongue_examination: formData.tongue_examination || null,
@@ -296,9 +299,9 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
             respiratory_rate: formData.respiratory_rate ? parseInt(formData.respiratory_rate) : null,
             oxygen_saturation: formData.oxygen_saturation ? parseInt(formData.oxygen_saturation) : null,
             vital_notes: formData.vital_notes || null,
-            // Body Diagrams
+            // Body Diagrams (Face Maps)
             body_diagram_front: bodyDiagrams.front as any,
-            body_diagram_back: bodyDiagrams.back as any,
+            body_diagram_back: { left: bodyDiagrams.left, right: bodyDiagrams.right } as any,
             // Examination
             general_appearance: formData.general_appearance || null,
             tongue_examination: formData.tongue_examination || null,
@@ -418,9 +421,15 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
       practitioner_notes: notes?.practitioner_notes || '',
     });
     
+    // Handle both old format (array) and new format (object with left/right)
+    const backData = notes?.body_diagram_back;
+    const leftData = Array.isArray(backData) ? backData : (backData?.left || []);
+    const rightData = Array.isArray(backData) ? [] : (backData?.right || []);
+    
     setBodyDiagrams({
       front: notes?.body_diagram_front || [],
-      back: notes?.body_diagram_back || [],
+      left: leftData,
+      right: rightData,
     });
     
     setIsDialogOpen(true);
@@ -937,14 +946,21 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
                     </Button>
                     <Button
                       type="button"
-                      variant={activeBodyView === 'back' ? 'default' : 'outline'}
-                      onClick={() => setActiveBodyView('back')}
+                      variant={activeBodyView === 'left' ? 'default' : 'outline'}
+                      onClick={() => setActiveBodyView('left')}
                     >
-                      Back View
+                      Left Profile
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={activeBodyView === 'right' ? 'default' : 'outline'}
+                      onClick={() => setActiveBodyView('right')}
+                    >
+                      Right Profile
                     </Button>
                   </div>
-                  <BodyDiagramMarker
-                    markers={activeBodyView === 'front' ? bodyDiagrams.front : bodyDiagrams.back}
+                  <FaceMapMarker
+                    markers={bodyDiagrams[activeBodyView]}
                     onChange={(markers) =>
                       setBodyDiagrams({
                         ...bodyDiagrams,
@@ -1099,7 +1115,7 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
                           id="subjective"
                           value={formData.subjective}
                           onChange={(e) => setFormData({ ...formData, subjective: e.target.value })}
-                          placeholder="Patient's description of symptoms"
+                          placeholder="Student's description of symptoms"
                           rows={3}
                         />
                       </div>
@@ -1141,7 +1157,7 @@ export function VisitNotesTab({ patientId, isAdminMode = false }: VisitNotesTabP
                           onCheckedChange={(checked) => setFormData({ ...formData, is_private: checked as boolean })}
                         />
                         <Label htmlFor="is_private" className="text-sm font-normal cursor-pointer">
-                          Mark notes as private (hidden from patient)
+                          Mark notes as private (hidden from student)
                         </Label>
                       </div>
                     </div>

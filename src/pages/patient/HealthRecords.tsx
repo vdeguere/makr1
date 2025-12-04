@@ -7,10 +7,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/contexts/RoleContext';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, FileText, Calendar, Activity, Package, Heart, Flame } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { HealthOverview } from '@/components/patients/health/HealthOverview';
 import { WellnessTrackerTab } from '@/components/patients/wellness/WellnessTrackerTab';
+import { SkinProgressGallery } from '@/components/patients/skincare/SkinProgressGallery';
+import { StudentWorkGallery } from '@/components/students/skills/StudentWorkGallery';
+import { ProgressSpiderChart } from '@/components/students/ProgressSpiderChart';
 import { VisitNotesTab } from '@/components/patients/medical/VisitNotesTab';
 import { VitalSignsTab } from '@/components/patients/medical/VitalSignsTab';
 import { OrdersTab } from '@/components/patients/medical/OrdersTab';
@@ -32,8 +36,8 @@ interface HealthRecord {
 }
 
 interface HealthStats {
-  totalRecommendations: number;
-  activeRecommendations: number;
+  totalAssignments: number;
+  activeAssignments: number;
   completedOrders: number;
   upcomingVisits: number;
 }
@@ -47,13 +51,14 @@ export default function HealthRecords() {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [stats, setStats] = useState<HealthStats>({
-    totalRecommendations: 0,
-    activeRecommendations: 0,
+    totalAssignments: 0,
+    activeAssignments: 0,
     completedOrders: 0,
     upcomingVisits: 0,
   });
   const [selectedRecommendationId, setSelectedRecommendationId] = useState<string | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [progressData, setProgressData] = useState<Array<{ name: string; value: number }>>([]);
 
   useEffect(() => {
     if (activeRole && activeRole !== 'patient') {
@@ -76,7 +81,7 @@ export default function HealthRecords() {
 
       if (patientError) throw patientError;
       if (!patientData) {
-        console.error('No patient record found');
+        logger.error('No patient record found');
         setLoading(false);
         return;
       }
@@ -113,8 +118,8 @@ export default function HealthRecords() {
       // Calculate stats
       const activeStatuses = ['sent', 'payment_pending', 'paid', 'shipped'];
       setStats({
-        totalRecommendations: recommendationsData?.length || 0,
-        activeRecommendations: recommendationsData?.filter(r => activeStatuses.includes(r.status)).length || 0,
+        totalAssignments: recommendationsData?.length || 0,
+        activeAssignments: recommendationsData?.filter(r => activeStatuses.includes(r.status)).length || 0,
         completedOrders: ordersData?.filter(o => o.status === 'delivered').length || 0,
         upcomingVisits: visitsData?.length || 0,
       });
@@ -125,7 +130,7 @@ export default function HealthRecords() {
         has_active_treatments: (recommendationsData?.filter(r => activeStatuses.includes(r.status)).length || 0) > 0,
       });
     } catch (error) {
-      console.error('Error fetching patient data:', error);
+      logger.error('Error fetching patient data:', error);
     } finally {
       setLoading(false);
     }
@@ -185,7 +190,7 @@ export default function HealthRecords() {
             </TabsTrigger>
             <TabsTrigger value="wellness" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              <span>Wellness</span>
+              <span>My Work</span>
             </TabsTrigger>
             <TabsTrigger value="visits" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -264,8 +269,27 @@ export default function HealthRecords() {
             <TreatmentScheduleList patientId={patientId} />
           </TabsContent>
 
-          <TabsContent value="wellness">
-            <WellnessTrackerTab patientId={patientId} />
+          <TabsContent value="wellness" className="space-y-6">
+            <StudentWorkGallery studentId={patientId} />
+          </TabsContent>
+
+          <TabsContent value="progress" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Progress</CardTitle>
+                <CardDescription>Track your skills across different metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {progressData.length > 0 ? (
+                  <ProgressSpiderChart data={progressData} />
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>No progress metrics configured yet.</p>
+                    <p className="text-sm mt-2">Your instructor will score you on various skills.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="visits">

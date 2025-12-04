@@ -26,6 +26,7 @@ import {
 } from '@/lib/courseBuilderUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
+import { logger } from '@/lib/logger';
 
 export default function CourseBuilder() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -69,7 +70,7 @@ export default function CourseBuilder() {
       const data = await fetchCourseStructure(courseId);
       setStructure(data);
     } catch (error) {
-      console.error('Error loading course structure:', error);
+      logger.error('Error loading course structure:', error);
       toast.error('Failed to load course structure');
     } finally {
       setLoading(false);
@@ -97,7 +98,7 @@ export default function CourseBuilder() {
       setSelectedType('section');
       toast.success('Section created');
     } catch (error) {
-      console.error('Error creating section:', error);
+      logger.error('Error creating section:', error);
       toast.error('Failed to create section');
     }
   };
@@ -137,7 +138,7 @@ export default function CourseBuilder() {
       setSelectedType('lesson');
       toast.success('Lesson created');
     } catch (error) {
-      console.error('Error creating lesson:', error);
+      logger.error('Error creating lesson:', error);
       toast.error('Failed to create lesson');
     }
   };
@@ -178,7 +179,7 @@ export default function CourseBuilder() {
         setSelectedType(null);
       }
     } catch (error) {
-      console.error('Error deleting item:', error);
+      logger.error('Error deleting item:', error);
       toast.error('Failed to delete item');
     } finally {
       setDeleteDialogOpen(false);
@@ -212,7 +213,7 @@ export default function CourseBuilder() {
 
       setSelectedItem({ ...selectedItem, ...data });
     } catch (error) {
-      console.error('Error updating item:', error);
+      logger.error('Error updating item:', error);
       toast.error('Failed to update item');
     }
   };

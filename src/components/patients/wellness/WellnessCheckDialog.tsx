@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ImageUploadManager } from '@/components/products/ImageUploadManager';
+import { logger } from '@/lib/logger';
 
 interface WellnessCheckDialogProps {
   open: boolean;
@@ -24,6 +26,7 @@ interface WellnessData {
   energy_levels: number;
   sleep_quality: number;
   notes: string;
+  photos: string[];
 }
 
 const questions = [
@@ -79,9 +82,12 @@ export function WellnessCheckDialog({
     energy_levels: 3,
     sleep_quality: 3,
     notes: '',
+    photos: [],
   });
+  const [productImages, setProductImages] = useState<Array<{ url: string; isPrimary: boolean; order: number; caption?: string | null }>>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
-  const totalSteps = questions.length + 2; // questions + notes + review
+  const totalSteps = questions.length + 3; // questions + notes + photos + review
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   const handleRatingSelect = (value: number) => {
@@ -101,6 +107,48 @@ export function WellnessCheckDialog({
     }
   };
 
+  const handleImageUpload = async (files: FileList) => {
+    setUploadingImages(true);
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${patientId}/${crypto.randomUUID()}.${fileExt}`;
+        const filePath = `wellness-check-ins/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('patient-documents')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('patient-documents')
+          .getPublicUrl(filePath);
+
+        return {
+          url: data.publicUrl,
+          isPrimary: productImages.length === 0,
+          order: productImages.length,
+          caption: null,
+        };
+      });
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      const newImages = [...productImages, ...uploadedImages];
+      setProductImages(newImages);
+      setFormData(prev => ({ ...prev, photos: newImages.map(img => img.url) }));
+    } catch (error: any) {
+      logger.error('Error uploading images:', error);
+      toast({
+        title: 'Upload Error',
+        description: error.message || 'Failed to upload photos',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
 
@@ -110,7 +158,12 @@ export function WellnessCheckDialog({
         .insert({
           patient_id: patientId,
           recommendation_id: recommendationId || null,
-          ...formData,
+          overall_feeling: formData.overall_feeling,
+          symptom_improvement: formData.symptom_improvement,
+          treatment_satisfaction: formData.treatment_satisfaction,
+          energy_levels: formData.energy_levels,
+          sleep_quality: formData.sleep_quality,
+          notes: formData.notes + (formData.photos.length > 0 ? `\n\nPhotos: ${formData.photos.join(', ')}` : ''),
         });
 
       if (error) throw error;
@@ -128,12 +181,14 @@ export function WellnessCheckDialog({
         energy_levels: 3,
         sleep_quality: 3,
         notes: '',
+        photos: [],
       });
+      setProductImages([]);
       setCurrentStep(0);
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error submitting wellness check:', error);
+      logger.error('Error submitting wellness check:', error);
       toast({
         title: 'Error',
         description: 'Failed to submit. Please try again.',
@@ -214,6 +269,29 @@ export function WellnessCheckDialog({
     );
   };
 
+  const renderPhotoStep = () => {
+    return (
+      <div className="space-y-4 py-4">
+        <div className="space-y-2 text-center">
+          <h3 className="text-xl md:text-2xl font-semibold">Upload Progress Photos</h3>
+          <p className="text-sm text-muted-foreground">
+            Share photos to track your skin progress (optional)
+          </p>
+        </div>
+
+        <div className="max-w-md mx-auto">
+          <ImageUploadManager
+            images={productImages}
+            onChange={setProductImages}
+            onUpload={handleImageUpload}
+            maxImages={5}
+            uploadingImages={uploadingImages}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const renderReviewStep = () => {
     const getOptionForValue = (value: number) => {
       return ratingOptions.find(opt => opt.value === value);
@@ -257,6 +335,17 @@ export function WellnessCheckDialog({
               <p className="text-sm text-muted-foreground italic">{formData.notes}</p>
             </div>
           )}
+
+          {formData.photos.length > 0 && (
+            <div className="p-3 rounded-lg border bg-card">
+              <div className="text-sm font-medium mb-2">Progress Photos ({formData.photos.length})</div>
+              <div className="grid grid-cols-2 gap-2">
+                {formData.photos.map((photo, idx) => (
+                  <img key={idx} src={photo} alt={`Progress photo ${idx + 1}`} className="rounded-lg w-full h-24 object-cover" />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -267,6 +356,8 @@ export function WellnessCheckDialog({
       return renderQuestion();
     } else if (currentStep === questions.length) {
       return renderNotesStep();
+    } else if (currentStep === questions.length + 1) {
+      return renderPhotoStep();
     } else {
       return renderReviewStep();
     }
@@ -274,6 +365,7 @@ export function WellnessCheckDialog({
 
   const isReviewStep = currentStep === totalSteps - 1;
   const isNotesStep = currentStep === questions.length;
+  const isPhotoStep = currentStep === questions.length + 1;
 
   return (
     <ResponsiveDialog
@@ -330,10 +422,10 @@ export function WellnessCheckDialog({
             <Button
               type="button"
               onClick={handleNext}
-              disabled={loading}
+              disabled={loading || uploadingImages}
               className="min-w-[140px]"
             >
-              {isNotesStep ? 'Review' : 'Next'}
+              {isPhotoStep ? 'Review' : isNotesStep ? 'Continue' : 'Next'}
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           )}

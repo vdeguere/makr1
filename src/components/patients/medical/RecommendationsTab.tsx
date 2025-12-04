@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface RecommendationsTabProps {
   patientId: string;
@@ -150,7 +151,7 @@ export function RecommendationsTab({ patientId }: RecommendationsTabProps) {
       toast.success('Recommendation duplicated successfully');
       refetch();
     } catch (error) {
-      console.error('Error duplicating recommendation:', error);
+      logger.error('Error duplicating recommendation:', error);
       toast.error('Failed to duplicate recommendation');
     }
   };
@@ -182,7 +183,7 @@ export function RecommendationsTab({ patientId }: RecommendationsTabProps) {
       setIsDeleteOpen(false);
       setSelectedRecommendation(null);
     } catch (error) {
-      console.error('Error deleting recommendation:', error);
+      logger.error('Error deleting recommendation:', error);
       toast.error('Failed to delete recommendation');
     } finally {
       setIsDeleting(false);
@@ -205,7 +206,7 @@ export function RecommendationsTab({ patientId }: RecommendationsTabProps) {
         throw new Error('No checkout URL returned');
       }
     } catch (error) {
-      console.error('Error generating checkout link:', error);
+      logger.error('Error generating checkout link:', error);
       toast.error('Failed to generate checkout link. Please try again.');
     } finally {
       setLoadingCheckout(null);

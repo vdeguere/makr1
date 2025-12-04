@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, UserCircle, Stethoscope, ArrowLeft, ArrowRight, Mail } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 import { 
   signInSchema, 
   signUpSchema, 
@@ -139,7 +140,7 @@ export default function Auth() {
       });
 
       if (onboardingError) {
-        console.error('Onboarding error:', onboardingError);
+        logger.error('Onboarding error:', onboardingError);
         toast({
           title: 'Profile Update Error',
           description: 'Account created but profile update failed. You can update your profile later.',
@@ -158,7 +159,7 @@ export default function Auth() {
       
       navigate('/dashboard');
     } catch (error) {
-      console.error('Onboarding error:', error);
+      logger.error('Onboarding error:', error);
       toast({
         title: 'Profile Update Error',
         description: 'Account created but profile update failed. You can update your profile later.',

@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { logger } from '@/lib/logger';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -54,7 +55,7 @@ const messageSchema = z.object({
 }).refine(
   (data) => data.recipient_type === 'support' || data.patient_id,
   {
-    message: 'Please select a patient',
+    message: 'Please select a student',
     path: ['patient_id'],
   }
 );
@@ -102,8 +103,8 @@ export function PractitionerNewMessageDialog({
 
       setPatients(patientList || []);
     } catch (error) {
-      console.error('Error fetching patients:', error);
-      toast.error('Failed to load patients');
+      logger.error('Error fetching patients:', error);
+      toast.error('Failed to load students');
     } finally {
       setLoadingPatients(false);
     }
@@ -122,7 +123,7 @@ export function PractitionerNewMessageDialog({
         const selectedPatient = patients.find(p => p.id === values.patient_id);
         subject = selectedPatient 
           ? `Message to ${selectedPatient.full_name}` 
-          : 'Message to Patient';
+          : 'Message to Student';
       }
 
       const insertData = values.recipient_type === 'support' 
@@ -160,7 +161,7 @@ export function PractitionerNewMessageDialog({
       onOpenChange(false);
       onMessageSent();
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message:', error);
       toast.error('Failed to send message');
     } finally {
       setSending(false);
@@ -173,7 +174,7 @@ export function PractitionerNewMessageDialog({
         <DialogHeader>
           <DialogTitle>New Message</DialogTitle>
           <DialogDescription>
-            Send a message to a patient or contact the support team.
+            Send a message to a student or contact the support team.
           </DialogDescription>
         </DialogHeader>
 
@@ -196,7 +197,7 @@ export function PractitionerNewMessageDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="patient">Patient</SelectItem>
+                      <SelectItem value="patient">Student</SelectItem>
                       <SelectItem value="support">Support Team</SelectItem>
                     </SelectContent>
                   </Select>
@@ -211,7 +212,7 @@ export function PractitionerNewMessageDialog({
                 name="patient_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Patient</FormLabel>
+                    <FormLabel>Student</FormLabel>
                     <Select
                       disabled={loadingPatients || sending}
                       onValueChange={field.onChange}
@@ -219,7 +220,7 @@ export function PractitionerNewMessageDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a patient" />
+                          <SelectValue placeholder="Select a student" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

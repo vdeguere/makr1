@@ -14,6 +14,7 @@ import { SendRecommendationDialog } from './SendRecommendationDialog';
 import { recommendationSchema, herbItemSchema } from '@/lib/validations/recommendation';
 import { z } from 'zod';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { logger } from '@/lib/logger';
 interface Patient {
   id: string;
   full_name: string;
@@ -31,6 +32,8 @@ interface HerbItem {
   herb_id: string;
   quantity: number;
   dosage_instructions: string;
+  routine_step?: string;
+  time_of_day?: 'Morning' | 'Evening' | 'Both';
   herb?: Herb;
 }
 interface RecommendationFormDialogProps {
@@ -96,12 +99,24 @@ export function RecommendationFormDialog({
 
         // Load recommendation items
         if (recommendation.recommendation_items) {
-          const items = recommendation.recommendation_items.map((item: any) => ({
-            herb_id: item.herb_id,
-            quantity: item.quantity || 1,
-            dosage_instructions: item.dosage_instructions || '',
-            herb: item.herbs
-          }));
+          const items = recommendation.recommendation_items.map((item: any) => {
+            let dosageData = { instructions: '', routine_step: '', time_of_day: 'Morning' as 'Morning' | 'Evening' | 'Both' };
+            if (item.dosage_instructions) {
+              try {
+                dosageData = JSON.parse(item.dosage_instructions);
+              } catch {
+                dosageData.instructions = item.dosage_instructions;
+              }
+            }
+            return {
+              herb_id: item.herb_id,
+              quantity: item.quantity || 1,
+              dosage_instructions: dosageData.instructions || '',
+              routine_step: dosageData.routine_step || '',
+              time_of_day: dosageData.time_of_day || 'Morning',
+              herb: item.herbs
+            };
+          });
           setHerbItems(items);
         }
       } else {
@@ -152,7 +167,9 @@ export function RecommendationFormDialog({
     setHerbItems([...herbItems, {
       herb_id: '',
       quantity: 1,
-      dosage_instructions: ''
+      dosage_instructions: '',
+      routine_step: '',
+      time_of_day: 'Morning'
     }]);
   };
   const removeHerbItem = (index: number) => {
@@ -182,7 +199,7 @@ export function RecommendationFormDialog({
     if (!practitionerId || !formData.patient_id || !formData.title || herbItems.length === 0) {
       toast({
         title: 'Validation Error',
-        description: activeRole === 'admin' ? 'Please select a practitioner, patient, title, and add at least one herb' : 'Please fill in all required fields and add at least one herb',
+        description: activeRole === 'admin' ? 'Please select an instructor, student, title, and add at least one product' : 'Please fill in all required fields and add at least one product',
         variant: 'destructive'
       });
       return;
@@ -241,7 +258,11 @@ export function RecommendationFormDialog({
           recommendation_id: recommendation.id,
           herb_id: item.herb_id,
           quantity: item.quantity,
-          dosage_instructions: item.dosage_instructions || null,
+          dosage_instructions: JSON.stringify({
+            instructions: item.dosage_instructions || '',
+            routine_step: item.routine_step || '',
+            time_of_day: item.time_of_day || 'Morning'
+          }),
           unit_price: herbs.find(h => h.id === item.herb_id)?.retail_price || 0
         }));
         const {
@@ -276,7 +297,11 @@ export function RecommendationFormDialog({
           recommendation_id: newRecommendation.id,
           herb_id: item.herb_id,
           quantity: item.quantity,
-          dosage_instructions: item.dosage_instructions || null,
+          dosage_instructions: JSON.stringify({
+            instructions: item.dosage_instructions || '',
+            routine_step: item.routine_step || '',
+            time_of_day: item.time_of_day || 'Morning'
+          }),
           unit_price: herbs.find(h => h.id === item.herb_id)?.retail_price || 0
         }));
         const {
@@ -313,7 +338,7 @@ export function RecommendationFormDialog({
         }
       }
     } catch (error: any) {
-      console.error('Error creating recommendation:', error);
+      logger.error('Error creating recommendation:', error);
       
       // Track error in GA4
       trackException('recommendation_creation_failed', false);
@@ -352,21 +377,21 @@ export function RecommendationFormDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{recommendation ? 'Edit Recommendation' : 'Create New Recommendation'}</DialogTitle>
+            <DialogTitle>{recommendation ? 'Edit Assignment' : 'Create New Assignment'}</DialogTitle>
             <DialogDescription>
-              {recommendation ? 'Update the herbal prescription details' : 'Create a personalized herbal prescription for your patient'}
+              {recommendation ? 'Update the assignment details' : 'Create a personalized assignment for your student'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {activeRole === 'admin' && <div className="space-y-2">
-                <Label htmlFor="practitioner">Practitioner *</Label>
+                <Label htmlFor="practitioner">Instructor *</Label>
                 <Select value={formData.practitioner_id} onValueChange={value => setFormData({
               ...formData,
               practitioner_id: value
             })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a practitioner" />
+                    <SelectValue placeholder="Select an instructor" />
                   </SelectTrigger>
                   <SelectContent>
                     {practitioners.map(practitioner => <SelectItem key={practitioner.id} value={practitioner.id}>
@@ -377,13 +402,13 @@ export function RecommendationFormDialog({
               </div>}
 
             <div className="space-y-2">
-              <Label htmlFor="patient">Patient *</Label>
+              <Label htmlFor="patient">Student *</Label>
               <Select value={formData.patient_id} onValueChange={value => setFormData({
               ...formData,
               patient_id: value
             })} disabled={!!recommendation}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a patient" />
+                  <SelectValue placeholder="Select a student" />
                 </SelectTrigger>
                 <SelectContent>
                   {patients.map(patient => <SelectItem key={patient.id} value={patient.id}>
@@ -398,15 +423,15 @@ export function RecommendationFormDialog({
               <Input id="title" value={formData.title} onChange={e => setFormData({
               ...formData,
               title: e.target.value
-            })} placeholder="e.g., Treatment for Common Cold" />
+            })} placeholder="e.g., Practice Assignment: Eyebrow Mapping" />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="diagnosis">Diagnosis</Label>
+              <Label htmlFor="diagnosis">Assignment Description</Label>
               <Textarea id="diagnosis" value={formData.diagnosis} onChange={e => setFormData({
               ...formData,
               diagnosis: e.target.value
-            })} placeholder="Describe the diagnosis..." rows={3} />
+            })} placeholder="Describe the assignment or task..." rows={3} />
             </div>
 
             <div className="space-y-2">
@@ -414,51 +439,187 @@ export function RecommendationFormDialog({
               <Textarea id="instructions" value={formData.instructions} onChange={e => setFormData({
               ...formData,
               instructions: e.target.value
-            })} placeholder="Special instructions for the patient..." rows={3} />
+            })} placeholder="Special instructions for the student..." rows={3} />
             </div>
 
             
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Herbs * (at least 1 required)</Label>
+                <Label>Products * (at least 1 required)</Label>
                 <Button type="button" onClick={addHerbItem} size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Herb
+                  Add Product
                 </Button>
               </div>
 
               {herbItems.length === 0 ? (
                 <div className="p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center text-muted-foreground">
-                  No herbs added yet. Click "Add Herb" to start building the recommendation.
+                  No products added yet. Click "Add Product" to start building the assignment.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {herbItems.map((item, index) => <div key={index} className="flex gap-2 items-end border p-3 rounded-lg bg-muted/50">
-                      <div className="flex-1 space-y-2">
-                        <Select value={item.herb_id} onValueChange={value => updateHerbItem(index, 'herb_id', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select herb" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {herbs.map(herb => <SelectItem key={herb.id} value={herb.id}>
-                                {herb.name} {herb.thai_name && `(${herb.thai_name})`} - ฿{herb.retail_price} (Stock: {herb.stock_quantity})
-                              </SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                <div className="space-y-6">
+                  {/* Morning Routine */}
+                  <div className="space-y-2">
+                    <Label className="text-lg font-semibold">Morning Routine</Label>
+                    <div className="space-y-3">
+                      {herbItems
+                        .filter(item => item.time_of_day === 'Morning' || item.time_of_day === 'Both')
+                        .sort((a, b) => (a.routine_step || '').localeCompare(b.routine_step || ''))
+                        .map((item, index) => {
+                          const originalIndex = herbItems.indexOf(item);
+                          return (
+                            <div key={originalIndex} className="flex gap-2 items-end border p-3 rounded-lg bg-muted/50">
+                              <div className="w-20">
+                                <Label>Step</Label>
+                                <Input 
+                                  value={item.routine_step || ''} 
+                                  onChange={e => updateHerbItem(originalIndex, 'routine_step', e.target.value)} 
+                                  placeholder="Step 1"
+                                />
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <Select value={item.herb_id} onValueChange={value => updateHerbItem(originalIndex, 'herb_id', value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select product" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {herbs.map(herb => <SelectItem key={herb.id} value={herb.id}>
+                                        {herb.name} - ฿{herb.retail_price} (Stock: {herb.stock_quantity})
+                                      </SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="w-24">
+                                <Label>Quantity</Label>
+                                <Input type="number" min="1" value={item.quantity} onChange={e => updateHerbItem(originalIndex, 'quantity', parseInt(e.target.value) || 1)} />
+                              </div>
+                              <div className="flex-1">
+                                <Label>Usage Instructions</Label>
+                                <Input value={item.dosage_instructions} onChange={e => updateHerbItem(originalIndex, 'dosage_instructions', e.target.value)} placeholder="e.g., Apply to clean skin" />
+                              </div>
+                              <Button type="button" onClick={() => removeHerbItem(originalIndex)} variant="ghost" size="icon">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      {herbItems.filter(item => item.time_of_day === 'Morning' || item.time_of_day === 'Both').length === 0 && (
+                        <div className="p-3 border border-dashed rounded-lg text-sm text-muted-foreground text-center">
+                          No morning products. Add products and set time to "Morning" or "Both".
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Evening Routine */}
+                  <div className="space-y-2">
+                    <Label className="text-lg font-semibold">Evening Routine</Label>
+                    <div className="space-y-3">
+                      {herbItems
+                        .filter(item => item.time_of_day === 'Evening' || item.time_of_day === 'Both')
+                        .sort((a, b) => (a.routine_step || '').localeCompare(b.routine_step || ''))
+                        .map((item, index) => {
+                          const originalIndex = herbItems.indexOf(item);
+                          return (
+                            <div key={originalIndex} className="flex gap-2 items-end border p-3 rounded-lg bg-muted/50">
+                              <div className="w-20">
+                                <Label>Step</Label>
+                                <Input 
+                                  value={item.routine_step || ''} 
+                                  onChange={e => updateHerbItem(originalIndex, 'routine_step', e.target.value)} 
+                                  placeholder="Step 1"
+                                />
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <Select value={item.herb_id} onValueChange={value => updateHerbItem(originalIndex, 'herb_id', value)}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select product" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {herbs.map(herb => <SelectItem key={herb.id} value={herb.id}>
+                                        {herb.name} - ฿{herb.retail_price} (Stock: {herb.stock_quantity})
+                                      </SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="w-24">
+                                <Label>Quantity</Label>
+                                <Input type="number" min="1" value={item.quantity} onChange={e => updateHerbItem(originalIndex, 'quantity', parseInt(e.target.value) || 1)} />
+                              </div>
+                              <div className="flex-1">
+                                <Label>Usage Instructions</Label>
+                                <Input value={item.dosage_instructions} onChange={e => updateHerbItem(originalIndex, 'dosage_instructions', e.target.value)} placeholder="e.g., Apply before bed" />
+                              </div>
+                              <Button type="button" onClick={() => removeHerbItem(originalIndex)} variant="ghost" size="icon">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      {herbItems.filter(item => item.time_of_day === 'Evening' || item.time_of_day === 'Both').length === 0 && (
+                        <div className="p-3 border border-dashed rounded-lg text-sm text-muted-foreground text-center">
+                          No evening products. Add products and set time to "Evening" or "Both".
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* All Items (for editing time_of_day) */}
+                  <div className="space-y-3 border-t pt-4">
+                    <Label className="text-sm font-medium">All Products</Label>
+                    {herbItems.map((item, index) => (
+                      <div key={index} className="flex gap-2 items-end border p-3 rounded-lg bg-muted/30">
+                        <div className="flex-1 space-y-2">
+                          <Select value={item.herb_id} onValueChange={value => updateHerbItem(index, 'herb_id', value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select product" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {herbs.map(herb => <SelectItem key={herb.id} value={herb.id}>
+                                  {herb.name} - ฿{herb.retail_price} (Stock: {herb.stock_quantity})
+                                </SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="w-24">
+                          <Label>Quantity</Label>
+                          <Input type="number" min="1" value={item.quantity} onChange={e => updateHerbItem(index, 'quantity', parseInt(e.target.value) || 1)} />
+                        </div>
+                        <div className="w-32">
+                          <Label>Time of Day</Label>
+                          <Select 
+                            value={item.time_of_day || ''} 
+                            onValueChange={value => updateHerbItem(index, 'time_of_day', value as 'Morning' | 'Evening' | 'Both')}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Morning">Morning</SelectItem>
+                              <SelectItem value="Evening">Evening</SelectItem>
+                              <SelectItem value="Both">Both</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="w-20">
+                          <Label>Step</Label>
+                          <Input 
+                            value={item.routine_step || ''} 
+                            onChange={e => updateHerbItem(index, 'routine_step', e.target.value)} 
+                            placeholder="Step 1"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Label>Usage Instructions</Label>
+                          <Input value={item.dosage_instructions} onChange={e => updateHerbItem(index, 'dosage_instructions', e.target.value)} placeholder="Usage instructions" />
+                        </div>
+                        <Button type="button" onClick={() => removeHerbItem(index)} variant="ghost" size="icon">
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <div className="w-24">
-                        <Label>Quantity</Label>
-                        <Input type="number" min="1" value={item.quantity} onChange={e => updateHerbItem(index, 'quantity', parseInt(e.target.value) || 1)} />
-                      </div>
-                      <div className="flex-1">
-                        <Label>Dosage Instructions</Label>
-                        <Input value={item.dosage_instructions} onChange={e => updateHerbItem(index, 'dosage_instructions', e.target.value)} placeholder="e.g., Take 2 tablets daily" />
-                      </div>
-                      <Button type="button" onClick={() => removeHerbItem(index)} variant="ghost" size="icon">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>)}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -483,7 +644,7 @@ export function RecommendationFormDialog({
                 </Button>
                 <Button onClick={() => handleSubmit(true)} disabled={loading || herbItems.length === 0}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Send to Patient
+                  Send to Student
                 </Button>
               </>}
           </DialogFooter>

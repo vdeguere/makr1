@@ -10,10 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ArrowLeft, Package, AlertCircle, Pencil, Trash2, Info } from 'lucide-react';
+import { ArrowLeft, Package, AlertCircle, Pencil, Trash2, Info, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HerbFormDialog } from '@/components/herbs/HerbFormDialog';
 import { logAudit } from '@/lib/auditLog';
+import { logger } from '@/lib/logger';
 import { ProductReviewSection } from '@/components/products/ProductReviewSection';
 import { StarRating } from '@/components/products/StarRating';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -69,6 +70,9 @@ interface Herb {
   category_id: string | null;
   brand: string | null;
   certifications: string[] | null;
+  required_certification_id?: string | null;
+  required_course_id?: string | null;
+  safety_waiver_required?: boolean | null;
   product_categories?: Category | null;
   average_rating?: number | null;
   review_count?: number | null;
@@ -89,12 +93,32 @@ export default function HerbDetail() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [hasRequiredCertification, setHasRequiredCertification] = useState<boolean | null>(null);
+  const [hasCompletedRequiredCourse, setHasCompletedRequiredCourse] = useState<boolean | null>(null);
+  const [requiredCourseName, setRequiredCourseName] = useState<string | null>(null);
+  const [checkingCertification, setCheckingCertification] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchHerb();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (herb?.required_certification_id && user?.id && activeRole === 'patient') {
+      checkCertification();
+    } else if (!herb?.required_certification_id) {
+      setHasRequiredCertification(true); // No restriction
+    }
+  }, [herb?.required_certification_id, user?.id, activeRole]);
+
+  useEffect(() => {
+    if (herb?.required_course_id && user?.id && activeRole === 'patient') {
+      checkCourseCompletion();
+    } else if (!herb?.required_course_id) {
+      setHasCompletedRequiredCourse(true); // No restriction
+    }
+  }, [herb?.required_course_id, user?.id, activeRole]);
 
   const fetchHerb = async () => {
     try {
@@ -122,7 +146,7 @@ export default function HerbDetail() {
 
       setHerb(typedData);
     } catch (error) {
-      console.error('Error fetching herb:', error);
+      logger.error('Error fetching herb:', error);
       toast({
         title: 'Error',
         description: 'Failed to load product details',
@@ -131,6 +155,76 @@ export default function HerbDetail() {
       navigate('/dashboard/herbs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkCourseCompletion = async () => {
+    if (!herb?.required_course_id || !user?.id) return;
+
+    try {
+      // Get course name
+      const { data: course } = await supabase
+        .from('courses')
+        .select('id, title')
+        .eq('id', herb.required_course_id)
+        .single();
+
+      if (course) {
+        setRequiredCourseName(course.title);
+      }
+
+      // Check if user has completed the course
+      const { data: enrollment } = await supabase
+        .from('course_enrollments')
+        .select('completion_percentage')
+        .eq('course_id', herb.required_course_id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (enrollment && enrollment.completion_percentage === 100) {
+        setHasCompletedRequiredCourse(true);
+      } else {
+        setHasCompletedRequiredCourse(false);
+      }
+    } catch (error) {
+      logger.error('Error checking course completion:', error);
+      setHasCompletedRequiredCourse(null);
+    }
+  };
+
+  const checkCertification = async () => {
+    if (!herb?.required_certification_id || !user?.id) return;
+
+    setCheckingCertification(true);
+    try {
+      // Check if user has the required certification
+      const { data: certification } = await supabase
+        .from('user_certifications')
+        .select('certificate_id, certificate:course_certificates(course_id, course:courses(title))')
+        .eq('user_id', user.id)
+        .eq('certificate_id', herb.required_certification_id)
+        .maybeSingle();
+
+      if (certification) {
+        setHasRequiredCertification(true);
+      } else {
+        setHasRequiredCertification(false);
+        // Get course name for display
+        const { data: certData } = await supabase
+          .from('course_certificates')
+          .select('course_id, course:courses(title)')
+          .eq('id', herb.required_certification_id)
+          .single();
+
+        if (certData?.course) {
+          setRequiredCourseName(certData.course.title);
+        }
+      }
+    } catch (error) {
+      logger.error('Error checking certification:', error);
+      setHasRequiredCertification(null);
+    } finally {
+      setCheckingCertification(false);
     }
   };
 
@@ -194,7 +288,7 @@ export default function HerbDetail() {
 
       navigate('/dashboard/herbs');
     } catch (error) {
-      console.error('Error deleting herb:', error);
+      logger.error('Error deleting herb:', error);
       toast({
         title: 'Error',
         description: 'Failed to delete product',
@@ -271,6 +365,24 @@ export default function HerbDetail() {
               >
                 {herb.stock_quantity === 0 ? 'Out of Stock' : 'Low Stock'}
               </Badge>
+            )}
+            
+            {/* Lock Overlay for Gated Products */}
+            {(activeRole === 'patient' && 
+              ((herb?.required_certification_id && hasRequiredCertification === false) ||
+               (herb?.required_course_id && hasCompletedRequiredCourse === false))) && (
+              <div className="absolute inset-0 bg-black/60 rounded-lg z-20 flex items-center justify-center">
+                <div className="text-center text-white space-y-2">
+                  <Lock className="h-12 w-12 mx-auto" />
+                  <p className="font-semibold">Locked</p>
+                  {herb?.required_course_id && hasCompletedRequiredCourse === false && (
+                    <p className="text-sm">Must complete: {requiredCourseName || 'Required Course'}</p>
+                  )}
+                  {herb?.required_certification_id && hasRequiredCertification === false && (
+                    <p className="text-sm">Requires certification</p>
+                  )}
+                </div>
+              </div>
             )}
             
             {getProductImages(herb).length > 0 ? (

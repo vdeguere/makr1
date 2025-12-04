@@ -8,6 +8,7 @@ import { Loader2, Edit, Send, Trash2, ExternalLink } from 'lucide-react';
 import { SendRecommendationDialog } from './SendRecommendationDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useRole } from '@/contexts/RoleContext';
+import { logger } from '@/lib/logger';
 
 interface RecommendationDetailDialogProps {
   recommendationId: string;
@@ -87,7 +88,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
             setCheckoutUrl(linkData.checkout_url);
           }
         } catch (error) {
-          console.error('Error generating checkout link:', error);
+          logger.error('Error generating checkout link:', error);
           toast({
             title: 'Error',
             description: 'Failed to load checkout link. Please try again.',
@@ -96,7 +97,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
         }
       }
     } catch (error) {
-      console.error('Error fetching recommendation:', error);
+      logger.error('Error fetching recommendation:', error);
       toast({
         title: 'Error',
         description: 'Failed to load recommendation details',
@@ -128,7 +129,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
       onUpdate();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error deleting recommendation:', error);
+      logger.error('Error deleting recommendation:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete recommendation',
@@ -161,7 +162,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
               <div>
                 <DialogTitle className="text-2xl">{recommendation.title}</DialogTitle>
                 <DialogDescription className="mt-2">
-                  Patient: {recommendation.patients.full_name}
+                  Student: {recommendation.patients.full_name}
                 </DialogDescription>
               </div>
               <Badge variant={
@@ -195,10 +196,10 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
               )}
             </div>
 
-            {/* Diagnosis */}
+            {/* Assignment Description */}
             {recommendation.diagnosis && (
               <div className="space-y-2">
-                <h3 className="font-semibold">Diagnosis</h3>
+                <h3 className="font-semibold">Assignment Description</h3>
                 <p className="text-sm bg-muted p-3 rounded-lg">{recommendation.diagnosis}</p>
               </div>
             )}
@@ -219,16 +220,16 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
               </div>
             )}
 
-            {/* Prescribed Herbs */}
+            {/* Required Materials */}
             <div className="space-y-2">
-              <h3 className="font-semibold">Prescribed Herbs</h3>
+              <h3 className="font-semibold">Required Materials</h3>
               <div className="border rounded-lg overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-muted">
                     <tr>
-                      <th className="text-left p-3">Herb</th>
+                      <th className="text-left p-3">Product</th>
                       <th className="text-left p-3">Quantity</th>
-                      <th className="text-left p-3">Dosage</th>
+                      <th className="text-left p-3">Usage Instructions</th>
                       <th className="text-right p-3">Price</th>
                     </tr>
                   </thead>
@@ -263,7 +264,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
               </div>
             </div>
 
-            {/* Checkout Link for Patients */}
+            {/* Checkout Link for Students */}
             {activeRole === 'patient' && (recommendation.status === 'sent' || recommendation.status === 'payment_pending') && checkoutUrl && (
               <div className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg space-y-2">
                 <h3 className="font-semibold text-orange-900 dark:text-orange-100">
@@ -292,7 +293,7 @@ export function RecommendationDetailDialog({ recommendationId, open, onOpenChang
                   <>
                     <Button variant="outline" onClick={() => setSendDialogOpen(true)}>
                       <Send className="h-4 w-4 mr-2" />
-                      Send to Patient
+                      Send to Student
                     </Button>
                     <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
                       <Trash2 className="h-4 w-4 mr-2" />

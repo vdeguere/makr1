@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from './logger';
 
 export type AuditAction = 
   | 'patient_created' 
@@ -33,7 +34,7 @@ export async function logAudit({
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error('No authenticated user for audit log');
+      logger.error('No authenticated user for audit log');
       return;
     }
 
@@ -49,9 +50,9 @@ export async function logAudit({
       });
 
     if (error) {
-      console.error('Error logging audit:', error);
+      logger.error('Error logging audit:', error);
     }
   } catch (error) {
-    console.error('Error in logAudit:', error);
+    logger.error('Error in logAudit:', error);
   }
 }

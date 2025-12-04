@@ -12,6 +12,7 @@ import { Loader2, Plus, Search, FileText } from 'lucide-react';
 import { RecommendationFormDialog } from '@/components/recommendations/RecommendationFormDialog';
 import { RecommendationDetailDialog } from '@/components/recommendations/RecommendationDetailDialog';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface Recommendation {
   id: string;
@@ -62,10 +63,10 @@ export default function Recommendations() {
       if (error) throw error;
       setRecommendations(data || []);
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      logger.error('Error fetching recommendations:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load recommendations',
+        description: 'Failed to load assignments',
         variant: 'destructive',
       });
     } finally {
@@ -106,13 +107,13 @@ export default function Recommendations() {
           <div className="flex items-center gap-2">
             <FileText className="h-8 w-8" />
             <div>
-              <h1 className="text-3xl font-bold">Recommendations</h1>
-              <p className="text-muted-foreground">Create and manage patient recommendations</p>
+              <h1 className="text-3xl font-bold">Assignments</h1>
+              <p className="text-muted-foreground">Create and manage student assignments</p>
             </div>
           </div>
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            New Recommendation
+            New Assignment
           </Button>
         </div>
 
@@ -207,19 +208,19 @@ export default function Recommendations() {
           </div>
         </div>
 
-        {/* Recommendations List */}
+        {/* Assignments List */}
         {filteredRecommendations.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
                 {searchQuery || filterStatus !== 'all' 
-                  ? 'No recommendations found matching your filters'
-                  : 'No recommendations yet'}
+                  ? 'No assignments found matching your filters'
+                  : 'No assignments yet'}
               </p>
               {!searchQuery && filterStatus === 'all' && (
                 <Button onClick={() => setIsFormOpen(true)} className="mt-4">
-                  Create Your First Recommendation
+                  Create Your First Assignment
                 </Button>
               )}
             </CardContent>
@@ -248,11 +249,11 @@ export default function Recommendations() {
                         </Badge>
                       </div>
                       <CardDescription className="flex items-center gap-4">
-                        <span>Patient: {rec.patients.full_name}</span>
+                        <span>Student: {rec.patients.full_name}</span>
                         {activeRole === 'admin' && rec.profiles && (
                           <>
                             <span>•</span>
-                            <span>Practitioner: {rec.profiles.full_name}</span>
+                            <span>Instructor: {rec.profiles.full_name}</span>
                           </>
                         )}
                         <span>•</span>

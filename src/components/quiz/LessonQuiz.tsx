@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 
 interface Question {
   id: string;
@@ -137,7 +138,7 @@ export default function LessonQuiz({ lessonId, enrollmentId, onComplete }: Lesso
 
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching quiz:", error);
+      logger.error("Error fetching quiz:", error);
       toast.error("Failed to load quiz");
       setLoading(false);
     }
@@ -219,7 +220,7 @@ export default function LessonQuiz({ lessonId, enrollmentId, onComplete }: Lesso
         toast.error(`You scored ${scorePercentage}%. Passing score is ${quiz?.passing_score}%`);
       }
     } catch (error) {
-      console.error("Error saving quiz attempt:", error);
+      logger.error("Error saving quiz attempt:", error);
       toast.error("Failed to save quiz results");
     }
   };

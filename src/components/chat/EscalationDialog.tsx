@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { logger } from '@/lib/logger';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -79,7 +80,7 @@ export function EscalationDialog({ open, onOpenChange, chatHistory }: Escalation
       form.reset();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error submitting support request:', error);
+      logger.error('Error submitting support request:', error);
       toast.error(t('chat:error'), {
         description: error.message || 'Failed to submit support request',
       });

@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Copy, Check, Mail, MessageCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { logger } from '@/lib/logger';
 interface Patient {
   id: string;
   full_name: string;
@@ -87,7 +88,7 @@ export function PatientConnectionDialog({
         });
       }
     } catch (error) {
-      console.error(`Error generating ${type} link:`, error);
+      logger.error(`Error generating ${type} link:`, error);
       toast({
         title: 'Error',
         description: 'Failed to generate connection link. Please try again.',

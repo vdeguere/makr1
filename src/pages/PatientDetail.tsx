@@ -10,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Mail, Phone, Calendar, ArrowLeft, 
   Edit, Trash2, Loader2, Activity, FileCheck, Folder, User, History, Link2,
-  Pill, ShoppingCart, ClipboardList, AlertCircle
+  Pill, ShoppingCart, ClipboardList, AlertCircle, LineChart
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
 import { getPatientInitials } from '@/lib/avatarUtils';
+import { logger } from '@/lib/logger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,11 +75,11 @@ export default function PatientDetail() {
 
       if (error) throw error;
 
-      toast.success('Patient deleted successfully');
+      toast.success('Student deleted successfully');
       navigate('/dashboard/patients');
     } catch (error) {
-      console.error('Error deleting patient:', error);
-      toast.error('Failed to delete patient');
+      logger.error('Error deleting patient:', error);
+      toast.error('Failed to delete student');
     } finally {
       setIsDeleting(false);
       setIsDeleteOpen(false);
@@ -100,11 +101,11 @@ export default function PatientDetail() {
       <DashboardLayout>
         <div className="text-center py-12">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Patient Not Found</h2>
-          <p className="text-muted-foreground mb-4">The patient you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold mb-2">Student Not Found</h2>
+          <p className="text-muted-foreground mb-4">The student you're looking for doesn't exist.</p>
           <Button onClick={() => navigate('/dashboard/patients')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Patients
+            Back to Students
           </Button>
         </div>
       </DashboardLayout>
@@ -141,14 +142,25 @@ export default function PatientDetail() {
                 {age && <Badge variant="secondary">{age} years old</Badge>}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Patient since {format(new Date(patient.created_at), 'MMMM yyyy')}
+                Student since {format(new Date(patient.created_at), 'MMMM yyyy')}
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => setIsEditOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Patient
-          </Button>
+          <div className="flex items-center gap-2">
+            {(role === 'practitioner' || role === 'admin' || role === 'dev') && (
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(`/dashboard/practitioner/students/${patient.id}/progress`)}
+              >
+                <LineChart className="h-4 w-4 mr-2" />
+                Score Progress
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setIsEditOpen(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Student
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -156,7 +168,7 @@ export default function PatientDetail() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="ttm-profile">
               <ClipboardList className="h-4 w-4 mr-2" />
-              TTM Profile
+              Skin Profile
             </TabsTrigger>
             <TabsTrigger value="visits">
               <FileCheck className="h-4 w-4 mr-2" />
@@ -278,7 +290,7 @@ export default function PatientDetail() {
                 onClick={() => setIsDeleteOpen(true)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Patient
+                Delete Student
               </Button>
             </div>
           </TabsContent>
@@ -327,10 +339,10 @@ export default function PatientDetail() {
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Patient</AlertDialogTitle>
+            <AlertDialogTitle>Delete Student</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete {patient.full_name}? This action cannot be undone.
-              All recommendations and orders associated with this patient will also be affected.
+              All assignments and orders associated with this student will also be affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

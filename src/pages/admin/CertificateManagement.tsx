@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Award, Search, Download, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 export default function CertificateManagement() {
   const { toast } = useToast();
@@ -53,7 +54,7 @@ export default function CertificateManagement() {
         thisYear
       });
     } catch (error) {
-      console.error('Error fetching certificates:', error);
+      logger.error('Error fetching certificates:', error);
       toast({
         title: "Error",
         description: "Failed to load certificates",

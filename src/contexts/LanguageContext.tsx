@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface Language {
   code: string;
@@ -54,7 +55,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error loading language:', error);
+        logger.error('Error loading language:', error);
       } finally {
         setLoading(false);
         setPreferencesLoaded(true);
@@ -81,7 +82,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           .eq('id', user.id);
       }
     } catch (error) {
-      console.error('Error updating language:', error);
+      logger.error('Error updating language:', error);
     }
   };
 

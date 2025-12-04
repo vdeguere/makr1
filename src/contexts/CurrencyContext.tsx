@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DEFAULT_CURRENCY, Currency, formatPrice, convertPrice } from '@/lib/currency';
+import { logger } from '@/lib/logger';
 
 interface CurrencyContextType {
   currency: string;
@@ -54,7 +55,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
           setExchangeRates(rates);
         }
       } catch (error) {
-        console.error('Error fetching currencies:', error);
+        logger.error('Error fetching currencies:', error);
       } finally {
         setLoading(false);
       }
@@ -98,7 +99,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error loading user currency preference:', error);
+        logger.error('Error loading user currency preference:', error);
       } finally {
         setPreferencesLoaded(true);
       }

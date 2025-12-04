@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from './logger';
 
 /**
  * Get patient initials from full name for avatar fallback
@@ -73,9 +74,9 @@ export async function deletePatientAvatar(avatarUrl: string): Promise<void> {
       .remove([filePath]);
 
     if (error) {
-      console.error('Error deleting avatar:', error);
+      logger.error('Error deleting avatar:', error);
     }
   } catch (error) {
-    console.error('Error deleting avatar:', error);
+    logger.error('Error deleting avatar:', error);
   }
 }

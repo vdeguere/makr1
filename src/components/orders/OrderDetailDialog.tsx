@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getStatusDisplayName, getStatusBadgeVariant } from '@/lib/orderUtils';
 import { CourierBadge } from './CourierBadge';
+import { logger } from '@/lib/logger';
 import { TrackingTimeline } from './TrackingTimeline';
 
 interface OrderDetailDialogProps {
@@ -63,7 +64,7 @@ export function OrderDetailDialog({ order, open, onOpenChange, activeRole }: Ord
       window.open(`/checkout/${linkData.token}`, '_blank');
       toast.success("Opening checkout page...");
     } catch (error) {
-      console.error('Error fetching checkout link:', error);
+      logger.error('Error fetching checkout link:', error);
       toast.error("Failed to open checkout. Please try again.");
     } finally {
       setIsLoadingCheckout(false);

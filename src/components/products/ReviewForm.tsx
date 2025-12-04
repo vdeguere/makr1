@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ReviewMediaUpload } from "./ReviewMediaUpload";
+import { logger } from "@/lib/logger";
 
 interface ReviewFormProps {
   herbId: string;
@@ -73,7 +74,7 @@ export function ReviewForm({ herbId, patientId, userRole, onSuccess, onCancel }:
       form.reset();
       onSuccess?.();
     } catch (error: any) {
-      console.error("Error submitting review:", error);
+      logger.error("Error submitting review:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to submit review. Please try again.",

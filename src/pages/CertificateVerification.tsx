@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 export default function CertificateVerification() {
   const [searchParams] = useSearchParams();
@@ -53,7 +54,7 @@ export default function CertificateVerification() {
         });
       }
     } catch (error) {
-      console.error('Verification error:', error);
+      logger.error('Verification error:', error);
       toast({
         title: "Verification Failed",
         description: "An error occurred during verification",

@@ -10,8 +10,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
-import { Save, Loader2, CalendarIcon } from "lucide-react";
+import { Save, Loader2, CalendarIcon, Download, History, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { LifestyleAssessment, type LifestyleData } from "../skincare/LifestyleAssessment";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { logger } from "@/lib/logger";
 
 interface TTMPatientProfileTabProps {
   patientId: string;
@@ -213,10 +225,23 @@ const TaksaGrid = ({ grid, title }: { grid: number[], title: string }) => {
   );
 };
 
+interface LifestyleHistoryEntry {
+  id: string;
+  patient_id: string;
+  lifestyle_data: LifestyleData;
+  changed_by: string | null;
+  change_reason: string | null;
+  created_at: string;
+  changed_by_name?: string;
+}
+
 export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("demographics");
   const [selectedTaksaDate, setSelectedTaksaDate] = useState<Date>(new Date());
+  const [lifestyleData, setLifestyleData] = useState<LifestyleData | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient-ttm", patientId],
@@ -266,6 +291,19 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
         past_operations: patient.past_operations || "",
         practitioner_notes: patient.practitioner_notes || "",
       });
+
+      // Load lifestyle data
+      if (patient.lifestyle_recommendations) {
+        try {
+          const parsed = JSON.parse(patient.lifestyle_recommendations) as LifestyleData;
+          setLifestyleData(parsed);
+        } catch (error) {
+          logger.error('Error parsing lifestyle recommendations:', error);
+          setLifestyleData(null);
+        }
+      } else {
+        setLifestyleData(null);
+      }
     }
   }, [patient]);
 
@@ -292,10 +330,132 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-ttm", patientId] });
-      toast.success("Patient profile updated successfully");
+      toast.success("Student profile updated successfully");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to update patient profile");
+      toast.error(error.message || "Failed to update student profile");
+    },
+  });
+
+  // Fetch lifestyle history
+  const { data: lifestyleHistory } = useQuery({
+    queryKey: ["lifestyle-history", patientId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("lifestyle_assessment_history")
+        .select(`
+          *,
+          changed_by_profile:profiles!lifestyle_assessment_history_changed_by_fkey(full_name)
+        `)
+        .eq("patient_id", patientId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      return (data || []).map((entry: any) => ({
+        ...entry,
+        lifestyle_data: entry.lifestyle_data as LifestyleData,
+        changed_by_name: entry.changed_by_profile?.full_name || null,
+      })) as LifestyleHistoryEntry[];
+    },
+    enabled: !!patientId,
+  });
+
+  const updateLifestyleMutation = useMutation({
+    mutationFn: async (data: LifestyleData) => {
+      // Save current version to history before updating (if it exists)
+      if (patient?.lifestyle_recommendations) {
+        try {
+          const currentData = JSON.parse(patient.lifestyle_recommendations);
+          // Only save to history if data has actually changed
+          if (JSON.stringify(currentData) !== JSON.stringify(data)) {
+            await (supabase as any)
+              .from("lifestyle_assessment_history")
+              .insert({
+                patient_id: patientId,
+                lifestyle_data: currentData,
+                changed_by: user?.id || null,
+                change_reason: "Updated lifestyle assessment",
+              });
+          }
+        } catch (historyError) {
+          logger.error("Error saving to history:", historyError);
+          // Don't fail the update if history save fails
+        }
+      }
+
+      // Update current lifestyle data
+      const { error } = await supabase
+        .from("patients")
+        .update({
+          lifestyle_recommendations: JSON.stringify(data),
+        })
+        .eq("id", patientId);
+
+      if (error) throw error;
+
+      // If this is the first time saving (no previous data), save to history after update
+      if (!patient?.lifestyle_recommendations) {
+        try {
+          await (supabase as any)
+            .from("lifestyle_assessment_history")
+            .insert({
+              patient_id: patientId,
+              lifestyle_data: data,
+              changed_by: user?.id || null,
+              change_reason: "Initial lifestyle assessment",
+            });
+        } catch (historyError) {
+          logger.error("Error saving initial history:", historyError);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["patient-ttm", patientId] });
+      queryClient.invalidateQueries({ queryKey: ["lifestyle-history", patientId] });
+      toast.success("Lifestyle assessment updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update lifestyle assessment");
+    },
+  });
+
+  const restoreHistoryMutation = useMutation({
+    mutationFn: async (historyEntry: LifestyleHistoryEntry) => {
+      // Save current version to history before restoring
+      if (patient?.lifestyle_recommendations) {
+        try {
+          await (supabase as any)
+            .from("lifestyle_assessment_history")
+            .insert({
+              patient_id: patientId,
+              lifestyle_data: JSON.parse(patient.lifestyle_recommendations),
+              changed_by: user?.id || null,
+              change_reason: "Restored from history",
+            });
+        } catch (historyError) {
+          logger.error("Error saving to history:", historyError);
+        }
+      }
+
+      // Restore the historical version
+      const { error } = await supabase
+        .from("patients")
+        .update({
+          lifestyle_recommendations: JSON.stringify(historyEntry.lifestyle_data),
+        })
+        .eq("id", patientId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["patient-ttm", patientId] });
+      queryClient.invalidateQueries({ queryKey: ["lifestyle-history", patientId] });
+      setHistoryDialogOpen(false);
+      toast.success("Lifestyle assessment restored successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to restore lifestyle assessment");
     },
   });
 
@@ -309,12 +469,13 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Patient Base Information</h3>
+      <h3 className="text-lg font-semibold">Student Base Information</h3>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="demographics">Demographics</TabsTrigger>
           <TabsTrigger value="medical">Medical History</TabsTrigger>
+          <TabsTrigger value="lifestyle">Lifestyle</TabsTrigger>
           <TabsTrigger value="taksa">Taksa</TabsTrigger>
         </TabsList>
 
@@ -394,7 +555,7 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
                 <Input
                   value={formData.occupation}
                   onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                  placeholder="Patient's occupation or career"
+                  placeholder="Student's occupation or career"
                 />
               </div>
 
@@ -403,7 +564,7 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
                 <Input
                   value={formData.id_number}
                   onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-                  placeholder="Patient identification number"
+                  placeholder="Student identification number"
                 />
               </div>
             </div>
@@ -459,6 +620,116 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
                 placeholder="Additional medical notes, observations, or other relevant information"
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="lifestyle" className="space-y-4">
+            {lifestyleData !== null ? (
+              <>
+                <LifestyleAssessment
+                  value={lifestyleData}
+                  onChange={(data) => setLifestyleData(data)}
+                  disabled={false}
+                />
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setHistoryDialogOpen(true)}
+                      disabled={!lifestyleHistory || lifestyleHistory.length === 0}
+                    >
+                      <History className="h-4 w-4 mr-2" />
+                      View History ({lifestyleHistory?.length || 0})
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (!lifestyleData || !patient) return;
+                        
+                        // Create export data
+                        const exportData = {
+                          patient_name: patient.full_name,
+                          patient_id: patient.id,
+                          export_date: new Date().toISOString(),
+                          lifestyle_assessment: lifestyleData,
+                        };
+                        
+                        // Create JSON blob
+                        const jsonString = JSON.stringify(exportData, null, 2);
+                        const blob = new Blob([jsonString], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${patient.full_name.replace(/\s+/g, '_')}_Lifestyle_Assessment_${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        toast.success('Lifestyle assessment exported successfully');
+                      }}
+                      disabled={!lifestyleData}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Data
+                    </Button>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (lifestyleData) {
+                        updateLifestyleMutation.mutate(lifestyleData);
+                      }
+                    }}
+                    disabled={updateLifestyleMutation.isPending}
+                  >
+                    {updateLifestyleMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Lifestyle Assessment
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No lifestyle assessment data available.</p>
+                  <p className="text-sm mt-2">Start by adding lifestyle information below.</p>
+                </div>
+                <LifestyleAssessment
+                  value={undefined}
+                  onChange={(data) => setLifestyleData(data)}
+                  disabled={false}
+                />
+                {lifestyleData && (
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button
+                      onClick={() => {
+                        updateLifestyleMutation.mutate(lifestyleData);
+                      }}
+                      disabled={updateLifestyleMutation.isPending}
+                    >
+                      {updateLifestyleMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Lifestyle Assessment
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="taksa" className="space-y-6">
@@ -592,6 +863,87 @@ export function TTMPatientProfileTab({ patientId }: TTMPatientProfileTabProps) {
           )}
         </Button>
       </div>
+
+      {/* Lifestyle History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Lifestyle Assessment History</DialogTitle>
+            <DialogDescription>
+              View and restore previous versions of the lifestyle assessment
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            {!lifestyleHistory || lifestyleHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No history available yet.</p>
+                <p className="text-sm mt-2">History will be created when you save changes to the lifestyle assessment.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {lifestyleHistory.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    className="border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={index === 0 ? "default" : "secondary"}>
+                            {index === 0 ? "Most Recent" : `Version ${lifestyleHistory.length - index}`}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {format(new Date(entry.created_at), "PPpp")}
+                          </span>
+                        </div>
+                        {entry.changed_by_name && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Changed by: {entry.changed_by_name}
+                          </p>
+                        )}
+                        {entry.change_reason && (
+                          <p className="text-xs text-muted-foreground">
+                            Reason: {entry.change_reason}
+                          </p>
+                        )}
+                      </div>
+                      {index > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Are you sure you want to restore this version? The current version will be saved to history.")) {
+                              restoreHistoryMutation.mutate(entry);
+                            }
+                          }}
+                          disabled={restoreHistoryMutation.isPending}
+                        >
+                          {restoreHistoryMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Restoring...
+                            </>
+                          ) : (
+                            "Restore"
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                    <div className="bg-muted/50 p-3 rounded-md">
+                      <LifestyleAssessment
+                        value={entry.lifestyle_data}
+                        onChange={() => {}}
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

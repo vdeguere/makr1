@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import { Plus, FileText, Download, Trash2, Upload, Eye, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface Document {
   id: string;
@@ -89,7 +90,7 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
       .createSignedUrl(filePath, 3600); // 1 hour expiry
     
     if (error) {
-      console.error('Error creating signed URL:', error);
+      logger.error('Error creating signed URL:', error);
       return '';
     }
     return data.signedUrl;

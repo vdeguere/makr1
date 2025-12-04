@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export type UserRole = 'dev' | 'admin' | 'practitioner' | 'patient' | null;
 
@@ -23,13 +24,13 @@ export function useUserRole(userId: string | undefined) {
           .single();
 
         if (error) {
-          console.error('Error fetching user role:', error);
+          logger.error('Error fetching user role:', error);
           setRole(null);
         } else {
           setRole(data?.role as UserRole);
         }
       } catch (error) {
-        console.error('Error in fetchUserRole:', error);
+        logger.error('Error in fetchUserRole:', error);
         setRole(null);
       } finally {
         setLoading(false);

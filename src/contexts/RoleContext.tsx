@@ -1,14 +1,17 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
 
-export type UserRole = 'dev' | 'admin' | 'practitioner' | 'patient' | null;
+export type UserRole = 'dev' | 'admin' | 'practitioner' | 'instructor' | 'patient' | 'student' | null;
 
 interface RoleContextType {
   role: UserRole;
   activeRole: UserRole;
   loading: boolean;
   switchRole?: (newRole: Exclude<UserRole, 'dev' | null>) => Promise<void>;
+  // Note: 'practitioner' and 'patient' are kept for backward compatibility
+  // In UI, they are displayed as 'instructor' and 'student' respectively
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
@@ -49,21 +52,19 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       setActiveRole(effectiveRole);
 
       if (roleError && (roleError as any).code !== 'PGRST116') {
-        console.error('Error fetching user role:', roleError);
+        logger.error('Error fetching user role:', roleError);
       }
       if (activeRoleError) {
-        console.error('Error fetching active role (get_active_role):', activeRoleError);
+        logger.error('Error fetching active role (get_active_role):', activeRoleError);
       }
 
-      if (import.meta.env.DEV) {
-        console.debug('[RoleContext] fetchUserRole', user.id, {
-          userRole,
-          activeRoleData,
-          effectiveRole,
-        });
-      }
+      logger.debug('[RoleContext] fetchUserRole', user.id, {
+        userRole,
+        activeRoleData,
+        effectiveRole,
+      });
     } catch (error) {
-      console.error('Error in fetchUserRole:', error);
+      logger.error('Error in fetchUserRole:', error);
       setRole(null);
       setActiveRole(null);
     } finally {
@@ -93,7 +94,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
       setActiveRole(newRole);
     } catch (error) {
-      console.error('Error switching role:', error);
+      logger.error('Error switching role:', error);
     }
   };
 

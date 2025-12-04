@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { logger } from '@/lib/logger';
 
 interface CheckoutData {
   recommendation: {
@@ -148,7 +149,7 @@ export default function Checkout() {
         }))
       );
     } catch (error) {
-      console.error('Error validating checkout:', error);
+      logger.error('Error validating checkout:', error);
       setError('Failed to load checkout');
     } finally {
       setLoading(false);
@@ -229,7 +230,7 @@ export default function Checkout() {
         navigate(`/order-confirmation/${data.order_id}`);
       }
     } catch (error: any) {
-      console.error('Error creating order:', error);
+      logger.error('Error creating order:', error);
       
       // Track checkout error in GA4
       trackException('checkout_failed', false);

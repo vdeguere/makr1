@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { lessonSchema, type LessonFormData } from '@/lib/validations/course';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,7 +114,7 @@ export function LessonFormDialog({
         description: 'Video uploaded successfully',
       });
     } catch (error: any) {
-      console.error('Error uploading video:', error);
+      logger.error('Error uploading video:', error);
       toast({
         title: 'Upload failed',
         description: error.message || 'Failed to upload video',

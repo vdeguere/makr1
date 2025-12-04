@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { logAudit } from '@/lib/auditLog';
+import { logger } from '@/lib/logger';
 import { ImageUploadManager } from '@/components/products/ImageUploadManager';
 
 interface Category {
@@ -61,6 +62,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
   const [loading, setLoading] = React.useState(false);
   const [uploadingImages, setUploadingImages] = React.useState(false);
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [courses, setCourses] = React.useState<Array<{ id: string; title: string }>>([]);
   const [certificationInput, setCertificationInput] = React.useState('');
   const [productImages, setProductImages] = React.useState<ProductImage[]>([]);
   const [formData, setFormData] = React.useState<Partial<HerbFormData>>({
@@ -82,14 +84,31 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
     certifications: [],
     subscription_enabled: false,
     subscription_discount_percentage: undefined,
-    subscription_intervals: ['monthly']
+    subscription_intervals: ['monthly'],
+    required_course_id: undefined,
   });
 
   const isEditMode = !!herb;
 
   React.useEffect(() => {
     fetchCategories();
+    fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('id, title')
+        .eq('is_published', true)
+        .order('title');
+
+      if (error) throw error;
+      setCourses(data || []);
+    } catch (error) {
+      logger.error('Error fetching courses:', error);
+    }
+  };
 
   React.useEffect(() => {
     if (herb) {
@@ -112,7 +131,8 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         certifications: herb.certifications || [],
         subscription_enabled: herb.subscription_enabled || false,
         subscription_discount_percentage: herb.subscription_discount_percentage || undefined,
-        subscription_intervals: (herb.subscription_intervals as any) || ['monthly']
+        subscription_intervals: (herb.subscription_intervals as any) || ['monthly'],
+        required_course_id: (herb as any).required_course_id || undefined,
       });
       
       // Load existing images or create from image_url
@@ -225,7 +245,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         });
       }
     } catch (error: any) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       toast({
         variant: 'destructive',
         title: 'Upload failed',
@@ -245,7 +265,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
       const primaryImage = productImages.find(img => img.isPrimary) || productImages[0];
       
       // Prepare data for database
-      const dbData = {
+      const dbData: any = {
         name: formData.name || '',
         thai_name: formData.thai_name || null,
         scientific_name: formData.scientific_name || null,
@@ -261,7 +281,10 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         images: productImages.length > 0 ? JSON.parse(JSON.stringify(productImages)) : null,
         category_id: formData.category_id || null,
         brand: formData.brand || null,
-        certifications: formData.certifications || null
+        certifications: formData.certifications || null,
+        required_certification_id: (formData as any).required_certification_id || null,
+        required_course_id: (formData as any).required_course_id || null,
+        safety_waiver_required: (formData as any).safety_waiver_required || false,
       };
 
       // Validate form data
@@ -312,7 +335,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error saving herb:', error);
+      logger.error('Error saving herb:', error);
       
       if (error.errors) {
         // Zod validation errors
@@ -352,12 +375,12 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter herb name"
+                placeholder="Enter product name"
                 required
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 hidden">
               <Label htmlFor="thai_name">Thai Name</Label>
               <Input
                 id="thai_name"
@@ -401,7 +424,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 hidden">
             <Label htmlFor="scientific_name">Scientific Name</Label>
             <Input
               id="scientific_name"
@@ -426,20 +449,135 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
             <Label htmlFor="properties">Keywords</Label>
             <Textarea
               id="properties"
-              value={formData.properties || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, properties: e.target.value }))}
+              value={(() => {
+                if (!formData.properties) return '';
+                try {
+                  const parsed = JSON.parse(formData.properties);
+                  return parsed.keywords || '';
+                } catch {
+                  return formData.properties;
+                }
+              })()}
+              onChange={(e) => {
+                const currentProps = formData.properties ? (() => {
+                  try { return JSON.parse(formData.properties); } catch { return { keywords: formData.properties }; }
+                })() : {};
+                setFormData(prev => ({ 
+                  ...prev, 
+                  properties: JSON.stringify({ ...currentProps, keywords: e.target.value || undefined })
+                }));
+              }}
               placeholder="Enter keywords"
               rows={3}
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="product_type">Product Type</Label>
+              <Select
+                value={(() => {
+                  if (!formData.properties) return '';
+                  try {
+                    const parsed = JSON.parse(formData.properties);
+                    return parsed.product_type || '';
+                  } catch {
+                    return '';
+                  }
+                })()}
+                onValueChange={(value) => {
+                  const currentProps = formData.properties ? (() => {
+                    try { return JSON.parse(formData.properties); } catch { return { keywords: formData.properties }; }
+                  })() : {};
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    properties: JSON.stringify({ ...currentProps, product_type: value || undefined })
+                  }));
+                }}
+              >
+                <SelectTrigger id="product_type">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="Cleanser">Cleanser</SelectItem>
+                  <SelectItem value="Toner">Toner</SelectItem>
+                  <SelectItem value="Serum">Serum</SelectItem>
+                  <SelectItem value="Moisturizer">Moisturizer</SelectItem>
+                  <SelectItem value="Supplement">Supplement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="time_of_day">Time of Day</Label>
+              <Select
+                value={(() => {
+                  if (!formData.properties) return '';
+                  try {
+                    const parsed = JSON.parse(formData.properties);
+                    return parsed.time_of_day || '';
+                  } catch {
+                    return '';
+                  }
+                })()}
+                onValueChange={(value) => {
+                  const currentProps = formData.properties ? (() => {
+                    try { return JSON.parse(formData.properties); } catch { return { keywords: formData.properties }; }
+                  })() : {};
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    properties: JSON.stringify({ ...currentProps, time_of_day: value || undefined })
+                  }));
+                }}
+              >
+                <SelectTrigger id="time_of_day">
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="Morning">Morning</SelectItem>
+                  <SelectItem value="Evening">Evening</SelectItem>
+                  <SelectItem value="Both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="routine_step">Routine Step</Label>
+              <Input
+                id="routine_step"
+                type="text"
+                value={(() => {
+                  if (!formData.properties) return '';
+                  try {
+                    const parsed = JSON.parse(formData.properties);
+                    return parsed.routine_step || '';
+                  } catch {
+                    return '';
+                  }
+                })()}
+                onChange={(e) => {
+                  const currentProps = formData.properties ? (() => {
+                    try { return JSON.parse(formData.properties); } catch { return { keywords: formData.properties }; }
+                  })() : {};
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    properties: JSON.stringify({ ...currentProps, routine_step: e.target.value || undefined })
+                  }));
+                }}
+                placeholder="e.g., Step 1, Step 2"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="dosage_instructions">Dosage Instructions</Label>
+            <Label htmlFor="dosage_instructions">Usage Instructions</Label>
             <Textarea
               id="dosage_instructions"
               value={formData.dosage_instructions || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, dosage_instructions: e.target.value }))}
-              placeholder="Enter dosage instructions"
+              placeholder="Enter usage instructions"
               rows={2}
             />
           </div>
@@ -576,6 +714,33 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
                 ))}
               </div>
           )}
+        </div>
+
+        {/* Course Gating Section */}
+        <div className="space-y-4 border-t pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="required_course_id">Required Course for Purchase (Optional)</Label>
+            <Select
+              value={(formData as any).required_course_id || ''}
+              onValueChange={(value) => setFormData(prev => ({ 
+                ...prev, 
+                required_course_id: value || undefined 
+              } as any))}
+            >
+              <SelectTrigger id="required_course_id">
+                <SelectValue placeholder="Select course (no restriction if none)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No Course Restriction</SelectItem>
+                {courses.map(course => (
+                  <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              Students must complete this course before they can purchase this product
+            </p>
+          </div>
         </div>
 
         {/* Subscription Pricing Section */}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle, Clock, BookOpen, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 interface CourseProgressTrackerProps {
   courseId: string;
@@ -90,7 +91,7 @@ export function CourseProgressTracker({ courseId, enrollmentId }: CourseProgress
         } : null
       });
     } catch (error) {
-      console.error("Error fetching progress stats:", error);
+      logger.error("Error fetching progress stats:", error);
     } finally {
       setLoading(false);
     }

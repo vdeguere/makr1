@@ -48,6 +48,9 @@ interface Herb {
   subscription_enabled?: boolean | null;
   subscription_discount_percentage?: number | null;
   subscription_intervals?: string[] | null;
+  required_course_id?: string | null;
+  required_certification_id?: string | null;
+  safety_waiver_required?: boolean | null;
 }
 
 interface HerbFormDialogProps {
@@ -55,6 +58,13 @@ interface HerbFormDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   herb?: Herb | null;
+}
+
+// Extended form data type that includes fields not yet in validation schema
+interface ExtendedHerbFormData extends Partial<HerbFormData> {
+  required_course_id?: string | null;
+  required_certification_id?: string | null;
+  safety_waiver_required?: boolean | null;
 }
 
 export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbFormDialogProps) {
@@ -65,7 +75,7 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
   const [courses, setCourses] = React.useState<Array<{ id: string; title: string }>>([]);
   const [certificationInput, setCertificationInput] = React.useState('');
   const [productImages, setProductImages] = React.useState<ProductImage[]>([]);
-  const [formData, setFormData] = React.useState<Partial<HerbFormData>>({
+  const [formData, setFormData] = React.useState<ExtendedHerbFormData>({
     name: '',
     thai_name: '',
     scientific_name: '',
@@ -86,6 +96,8 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
     subscription_discount_percentage: undefined,
     subscription_intervals: ['monthly'],
     required_course_id: undefined,
+    required_certification_id: undefined,
+    safety_waiver_required: false,
   });
 
   const isEditMode = !!herb;
@@ -133,6 +145,8 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         subscription_discount_percentage: herb.subscription_discount_percentage || undefined,
         subscription_intervals: (herb.subscription_intervals as any) || ['monthly'],
         required_course_id: (herb as any).required_course_id || undefined,
+        required_certification_id: (herb as any).required_certification_id || undefined,
+        safety_waiver_required: (herb as any).safety_waiver_required || false,
       });
       
       // Load existing images or create from image_url
@@ -165,7 +179,13 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         images: [],
         category_id: undefined,
         brand: '',
-        certifications: []
+        certifications: [],
+        subscription_enabled: false,
+        subscription_discount_percentage: undefined,
+        subscription_intervals: ['monthly'],
+        required_course_id: undefined,
+        required_certification_id: undefined,
+        safety_waiver_required: false,
       });
       setProductImages([]);
     }
@@ -282,9 +302,9 @@ export function HerbFormDialog({ open, onOpenChange, onSuccess, herb }: HerbForm
         category_id: formData.category_id || null,
         brand: formData.brand || null,
         certifications: formData.certifications || null,
-        required_certification_id: (formData as any).required_certification_id || null,
-        required_course_id: (formData as any).required_course_id || null,
-        safety_waiver_required: (formData as any).safety_waiver_required || false,
+        required_certification_id: (formData as ExtendedHerbFormData).required_certification_id || null,
+        required_course_id: (formData as ExtendedHerbFormData).required_course_id || null,
+        safety_waiver_required: (formData as ExtendedHerbFormData).safety_waiver_required ?? false,
       };
 
       // Validate form data

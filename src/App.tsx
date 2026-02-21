@@ -67,6 +67,7 @@ import MyLiveMeetings from "./pages/practitioner/MyLiveMeetings";
 import ProgressMetrics from "./pages/admin/ProgressMetrics";
 import StudentProgress from "./pages/practitioner/StudentProgress";
 import Submissions from "./pages/practitioner/Submissions";
+import BloomSocialGenerator from "./pages/BloomSocialGenerator";
 
 const queryClient = new QueryClient();
 
@@ -419,6 +420,8 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          {/* Bloom Social Post Generator */}
+          <Route path="/bloom-social" element={<BloomSocialGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
